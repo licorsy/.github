@@ -61,7 +61,7 @@ prompt except the blank scaffold; update it alongside any status change.
   (`.pre-commit-config.yaml`).
 - **Commit messages**: Conventional Commits (`feat`, `fix`, `docs`, `refactor`,
   `chore`, `test`, `perf`, `build`, `ci`), enforced by the `commit-msg` hook and
-  re-checked on `hom`/`main` PRs by `.github/workflows/pr-checks.yml`.
+  re-checked on `staging`/`main` PRs by `.github/workflows/pr-checks.yml`.
 
 ## Pull requests
 
