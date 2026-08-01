@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.10.0"
+version: "1.11.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -109,8 +109,8 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 1, 2, 8, 9, 10, and 14
-are open; items 3, 4, 5, 6, 7, 11, 12, 13, and 15 are closed — kept here with
+Each entry names the repository that owns the fix. Items 1, 2, 8, 9, 10, 14, and
+16 are open; items 3, 4, 5, 6, 7, 11, 12, 13, and 15 are closed — kept here with
 their resolution, because a gap that vanishes without a record gets rediscovered
 as a new finding by the next audit.
 
@@ -312,6 +312,24 @@ as a new finding by the next audit.
     failing. `git-governance` had the fix and the pin; every copy made from it
     predated both. The fix was not the flag — it was turning the pin into
     something that can fail.
+
+16. **`platform-workflows` carries one of the five compliance artifacts.**
+    Measured on 2026-08-01, the other four repositories are 5/5;
+    `platform-workflows` has only `.claude/settings.json` and is missing
+    `CLAUDE.md`, `.pre-commit-config.yaml`, `.github/workflows/pr-checks.yml`,
+    and `.docgov.config.js`.
+
+    It went unnoticed because nothing measured it until
+    `platform-workflows`' own new `governance-compliance.yml` was tested against
+    a deliberately non-compliant repository, and the nearest one to hand was
+    itself. The workflow that reports this now lives in the least compliant
+    repository in the organization.
+
+    Backfilling is a decision, not a cleanup: scaffolding `pre-commit` and
+    `pr-checks.yml` there changes how that repository is validated on every
+    commit and promotion, and `.docgov.config.js` implies a governed document
+    corpus it does not currently claim to have. Running `/git-check` there would
+    scaffold the first three; the fourth needs a deliberate scope.
 
 ## Canonical source
 
