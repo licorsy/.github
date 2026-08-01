@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.14.0"
+version: "1.15.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -211,6 +211,27 @@ record gets rediscovered as a new finding by the next audit.
    `v1.3.0^{}`, then verified against `ls-remote`'s peeled refs. An automated
    check comparing the tag to `main` would have caught both this and the
    original skipped release.
+
+   **The mechanism now exists**, as `platform-workflows`'
+   `release-integrity.yml`: it compares the floating tag and the version tag
+   against `main` on a schedule, and catches all three failure modes seen here —
+   `main` moved with nothing tagged, tagged without moving the floating tag, and
+   the floating tag pointing at a *tag object* rather than a commit. It is
+   scheduled rather than push-triggered because tagging happens *after* the
+   merge, so a push-triggered run would fail every release by construction.
+
+   **This entry stays open until every repository actually calls it.** Shipping
+   the check is not the same as running it, and this register has already
+   confused the two once — see item 16, where the compliance check lived in the
+   least compliant repository.
+
+   Its first real run proves the point: it found `platform-workflows` itself
+   drifted, with `v1` still at `v1.0.1` while `main` had moved several commits
+   past. Consumers pinning `@v1` were not even receiving `scorecard.yml` — and
+   the README documented `uses: ...@v1` for `governance-compliance.yml`, which
+   does not exist at `v1` at all. Anyone following that example would get
+   "workflow not found". That is three repositories affected by this gap, not
+   the one it was opened for.
 
 9. **Dependency review is still missing; the rest of the security baseline is
    now met.** The gap as first recorded was understated — it named only this
