@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.5.0"
+version: "1.6.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -110,7 +110,7 @@ Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
 Each entry names the repository that owns the fix. Items 1, 2, 8, 9, 10, 11, 12,
-and 13 are open; items 3, 4, 5, 6, and 7 are closed — kept here with their
+13, and 14 are open; items 3, 4, 5, 6, and 7 are closed — kept here with their
 resolution, because a gap that vanishes without a record gets rediscovered as a
 new finding by the next audit.
 
@@ -245,6 +245,29 @@ new finding by the next audit.
     `docs-governance-guard-clauses` fact; `docs-governance` has no `facts` entry
     at all, which is why the drift survived in the one repository that ships the
     engine.
+
+14. **Two other public repositories still name the private product
+    repositories.** This repository stopped naming them on 2026-08-01 (see the
+    blueprint's v1.2.0 changelog entry), but the same names remain in
+    `docs-governance` — 15 occurrences across 9 source files, as provenance
+    comments recording which private repository each rule was extracted from —
+    and in `ai-assisted-sdd-template`, 12 occurrences across 7 files. Both
+    repositories are public.
+
+    The template's case is the sharper one. It ships
+    `.github/scripts/check-public-sanitization.js`, whose `NAME_PATTERNS` exist
+    precisely to keep those names out of public content, and
+    `sync-to-public-mirror.sh` excludes `docs/prompts/` and `docs/reports/`
+    from the export for the same reason. But that script's own header records
+    it as retired — *this* repository is now the public one — so the exclusion
+    protects an export that no longer happens, while the content sits public in
+    the repository it was meant to be excluded from.
+
+    Not fixed here, because the two are different judgements and neither is
+    this repository's to make: `docs-governance`'s comments are load-bearing
+    (they explain why an exemption exists), and the template's are frozen
+    historical record its own metadata standard forbids rewriting. Recorded so
+    the decision is deliberate rather than overlooked.
 
 ## Canonical source
 
