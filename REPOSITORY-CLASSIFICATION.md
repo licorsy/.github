@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.15.0"
+version: "1.16.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -109,8 +109,8 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 1, 8, 9, and 14 are
-open; items 2 and 17 are **accepted** — real overlaps, deliberately not
+Each entry names the repository that owns the fix. Items 1, 8, 9, 14, and 18
+are open; items 2 and 17 are **accepted** — real overlaps, deliberately not
 scheduled for removal; items 3, 4, 5, 6, 7, 10, 11, 12, 13, 15, and 16 are
 closed — kept here with their resolution, because a gap that vanishes without a
 record gets rediscovered as a new finding by the next audit.
@@ -418,6 +418,31 @@ record gets rediscovered as a new finding by the next audit.
     The engine feature is not wasted either way: `anchor` is a general
     capability available to every consumer, and it is what makes this an
     accepted overlap by choice rather than by necessity.
+
+18. **Nothing enforces that `staging`/`main` receive only promotions.** The
+    rulesets require a pull request and block direct pushes, force-pushes, and
+    deletion — but they place no constraint on which branch a pull request comes
+    *from*. `AGENTS.md`'s branch flow says `develop -> staging` and
+    `staging -> main` are promotions and never a starting point for new work;
+    that half is convention, and only that half.
+
+    Found on 2026-08-01 while preparing this repository's own promotion:
+    `staging` and `main` differed, and the difference was on the wrong side.
+    `cda7932` — an agent-behavior issue template — was a single-parent commit
+    straight onto `main`, so `develop` and `staging` both lacked the file.
+
+    The consequence is worse than one stray file. A `staging -> main` merge
+    preserves `main`'s side, so such a commit survives on `main` while `develop`
+    stays missing it, and **every future promotion re-shows the same
+    difference** until someone back-merges. Fixed here by back-merging `main`
+    into `develop`, which is a repair, not a guard.
+
+    GitHub rulesets have no "allowed source branch" rule for pull requests, so
+    closing this structurally means a check rather than a setting: a workflow on
+    `pull_request` into `staging`/`main` that fails when `github.head_ref` is not
+    the expected upstream branch. That belongs in `platform-workflows` alongside
+    `release-integrity.yml`, which exists for the same shape of problem —
+    a policy stated in prose with nothing verifying it.
 
 ## Canonical source
 
