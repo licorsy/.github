@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.3.0"
+version: "1.4.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -56,9 +56,17 @@ community health files, reusable CI implementation logic that belongs to
 
 ### Product repositories
 
-Examples: `personal-os`, `rag-mcp-server`, and future internal or client
+The organization's private product repositories, plus future internal or client
 products. They implement business capabilities and consume the platform
 capabilities above.
+
+They are named here as a **class, not individually, and deliberately so.** This
+repository is public and its `README.md` renders as the public organization
+profile, while the product repositories are private. Naming them would publish
+the organization's private project list — the same reason
+`ai-assisted-sdd-template` runs a sanitization check over its public export.
+Governance rules apply to the category; nothing in this file needs a specific
+product's name to be actionable.
 
 ## Ownership matrix
 
@@ -174,7 +182,7 @@ next audit.
    **Closed 2026-08-01** by blueprint v1.1.0, which corrected Section 6.4 to
    `feat/*` and pointed at `git-governance` for the full taxonomy rather than
    restating it. Sections 11 and 13's source path were corrected to
-   `personal-os/state/resources.md` in the same revision.
+   `state/resources.md` in the same revision.
    The blueprint body is consequently **no longer verbatim intake text**;
    v1.0.0 in `git log` is the archived original.
 

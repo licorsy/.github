@@ -4,7 +4,7 @@ subtitle: "Operating Model, Engineering Standards, and Platform Architecture"
 doc_type: governance
 description: "Canonical operating model for Licorsy — organizational principles, repository architecture and ownership boundaries, architecture and engineering standards, security and reliability baseline, tooling strategy, maturity model, and governance cadence."
 status: active
-version: "1.1.0"
+version: "1.2.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -19,11 +19,16 @@ related: [architecture-principles, engineering-standards, repository-classificat
 
 Changelog:
 
+- v1.2.0: Sections 4.4, 11, and 13 no longer name the private product
+  repositories individually. This repository is public and they are not; naming
+  them published the organization's private project list for no governance
+  benefit, since every rule applies to the category. One of the names was also
+  stale — it referred to a repository that does not exist.
 - v1.1.0: First revision since intake. Section 6.4's branch progression corrected
   `feature/*` → `feat/*` and pointed at `git-governance` for the full prefix
   taxonomy, resolving a contradiction where this file was declared canonical while
   `CLAUDE.md` carried the current names. Section 11's and 13's source path
-  corrected to `personal-os/state/resources.md`, the file that actually exists.
+  corrected to `state/resources.md`, the file that actually exists.
   **The body is no longer verbatim intake text** — v1.0.0 in `git log` is the
   archived original.
 - v1.0.0: Intake, body verbatim from the source blueprint.
@@ -227,9 +232,13 @@ Must not own:
 ### 4.4 Product repositories
 
 Examples:
-- `personal-os`
-- `rag-mcp-server`
+- the organization's private product repositories
 - future client or internal products
+
+These are referred to as a class rather than by name: this repository is public
+and the product repositories are private, so enumerating them here would publish
+the organization's private project list. Every rule in this section applies to
+the category, not to any one product.
 
 Purpose:
 - implement actual business capabilities;
@@ -487,7 +496,8 @@ Licorsy should build internal tools only when:
 
 ## 11. Resource and capability management
 
-Licorsy should maintain a living **Resource Inventory** sourced from `personal-os/state/resources.md`.
+Licorsy should maintain a living **Resource Inventory** sourced from
+`state/resources.md` in the private product repository that owns it.
 
 This inventory must classify:
 - budget and runway;
@@ -500,11 +510,10 @@ This inventory must classify:
 - operational constraints.
 
 Required output artifact:
-- `personal-os/docs/resources/resource-inventory.md`
+- `docs/resources/resource-inventory.md`, in that same repository
 
-`personal-os/state/resources.md` already exists and is actively maintained as the
-source inventory; the artifact above is the derived, publishable view and does not
-exist yet.
+The source `state/resources.md` already exists and is actively maintained; the
+artifact above is the derived, publishable view and does not exist yet.
 
 Recommended sections:
 1. Financial runway
@@ -555,7 +564,7 @@ Characteristics:
 - add architecture document kit
 - add observability baseline kit
 - add security baseline kit
-- create `resource-inventory.md` from `personal-os/state/resources.md`
+- create `resource-inventory.md` from `state/resources.md` (Section 11)
 
 ### 61–90 days
 - onboard at least one real product using the full model
