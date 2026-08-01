@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.6.0"
+version: "1.7.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -199,14 +199,23 @@ new finding by the next audit.
    A release checklist, or a check that the tag matches `main`, would close
    it structurally.
 
-9. **This repository does not meet its own security baseline.** Secret scanning
-   and Dependabot security updates are disabled, and no workflow here runs
-   dependency review — while
-   [`SECURITY-BASELINE.md`](SECURITY-BASELINE.md) requires all three of every
-   serious repository. Both fixes are repository settings, not code, so they
-   cannot be applied by a pull request. Recorded here as well as in
-   `SECURITY-BASELINE.md` so this register stays the single place to read for
-   what is open.
+9. **Dependency review is still missing; the rest of the security baseline is
+   now met.** The gap as first recorded was understated — it named only this
+   repository, but secret scanning and Dependabot were disabled on **all five**.
+   Both are now enabled everywhere, along with secret-scanning push protection,
+   which refuses a push containing a credential rather than reporting it
+   afterwards. See [`SECURITY-BASELINE.md`](SECURITY-BASELINE.md) for the
+   verified per-control state.
+
+   What remains open is dependency review: `platform-workflows`'
+   `ci-security.yml` implements it as a reusable workflow and no repository here
+   calls it.
+
+   Also recorded there, because it fails silently: secret-scanning validity
+   checks cannot be enabled on this organization. They require GitHub Advanced
+   Security and the organization is on the free plan — but the API accepts the
+   setting, returns 200, and leaves it disabled. Anything that trusts the
+   response code instead of reading the value back will report it as on.
 
 10. **This repository's `AGENTS.md` has no counterpart in the plugin that
     scaffolds it.** `AGENTS.md` is now the source of truth here and `CLAUDE.md`
