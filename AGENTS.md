@@ -3,7 +3,7 @@ title: "AGENTS.md"
 doc_type: instruction
 description: "Canonical agent instructions for this repository and the source of truth CLAUDE.md points at: the branch flow, Conventional Commits requirement, the merge-method and branch-lifecycle policy enforced server-side, the autonomous-to-develop and human-gated-to-staging/main permission model, and the local and remote validation layers."
 status: active
-version: "1.0.0"
+version: "1.1.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -251,7 +251,7 @@ re-breaking it.
 
 See <https://github.com/licorsy/git-governance#readme> for the full walkthrough,
 [docs/org-governance-adoption.md](docs/org-governance-adoption.md) for the
-runbook and the five compliance artifacts, and `git-governance`'s
+runbook and the six compliance artifacts, and `git-governance`'s
 `agents/git-governance-advisor.md` for the branch taxonomy, permission matrix,
 and validation vocabulary — that one resolves anywhere the plugin is installed,
 since agents are registered by Claude Code, not read off disk.

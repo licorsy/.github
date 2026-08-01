@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.13.0"
+version: "1.14.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -109,11 +109,11 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 1, 8, 9, 10, and 14 are
+Each entry names the repository that owns the fix. Items 1, 8, 9, and 14 are
 open; items 2 and 17 are **accepted** — real overlaps, deliberately not
-scheduled for removal; items 3, 4, 5, 6, 7, 11, 12, 13, 15, and 16 are closed —
-kept here with their resolution, because a gap that vanishes without a record
-gets rediscovered as a new finding by the next audit.
+scheduled for removal; items 3, 4, 5, 6, 7, 10, 11, 12, 13, 15, and 16 are
+closed — kept here with their resolution, because a gap that vanishes without a
+record gets rediscovered as a new finding by the next audit.
 
 1. **`ai-assisted-sdd-template` CI depends on Licorsy's reusable workflows.**
    Its `.github/workflows/pr-checks.yml` calls
@@ -230,15 +230,31 @@ gets rediscovered as a new finding by the next audit.
    setting, returns 200, and leaves it disabled. Anything that trusts the
    response code instead of reading the value back will report it as on.
 
-10. **This repository's `AGENTS.md` has no counterpart in the plugin that
-    scaffolds it.** `AGENTS.md` is now the source of truth here and `CLAUDE.md`
-    is a one-line `@AGENTS.md` import, but `git-governance`'s
-    `init-governance.sh` still scaffolds a full `CLAUDE.md` and its own
-    `.docgov.config.js` still pins `facts` and `fragment_sync` against
-    `CLAUDE.md`. So this repository is deliberately ahead of the plugin, and a
-    re-scaffold would not reproduce it. The fix belongs to `git-governance`:
-    scaffold `AGENTS.md` plus a thin `CLAUDE.md`, and repoint its own pins.
-    Until then the four sibling repositories keep the old shape.
+10. ~~**This repository's `AGENTS.md` has no counterpart in the plugin that
+    scaffolds it.**~~ **Closed 2026-08-01** by `git-governance` v1.4.0.
+    `AGENTS.md` carries the policy and `CLAUDE.md` is an `@AGENTS.md` import in
+    `.github`, `git-governance`, `docs-governance`, and `platform-workflows`;
+    `init-governance.sh` scaffolds both, and `git-governance` repointed its own
+    `facts` and `fragment_sync` off `CLAUDE.md`.
+
+    **`ai-assisted-sdd-template` is deliberately excluded.** Its `CLAUDE.md` and
+    `AGENTS.md` are *peer* adapters over `docs/manuals/operation-manual.md` —
+    neither is a source of truth, both are thin pointers, which is `ADR-0003`
+    principle 2 and is enforced by `check-adapter-sync.js`. Collapsing one into
+    a pointer at the other would break that script and contradict an active ADR,
+    the same reasoning that made item 17 an accepted overlap. The template
+    already has an `AGENTS.md`; what it does not have is a *hierarchy*, and it
+    should not.
+
+    Two consequences worth keeping. `init-governance.sh` cannot migrate an
+    existing repository: skip-if-exists is per file, so a target with a full
+    `CLAUDE.md` receives `AGENTS.md` and ends up stating the policy twice — the
+    script cannot tell a stale full copy from a deliberate local one, and
+    `/git-check` now reports that shape as a hand edit. And the split briefly
+    opened a hole in `governance-compliance.yml`, which checked `CLAUDE.md` but
+    not `AGENTS.md`: a repository with a thin pointer to a *missing* `AGENTS.md`
+    would have passed with no policy at all. The compliance set is now six
+    artifacts, not five.
 
 11. ~~**Branch protection was applied to four of five repositories by something
     other than the plugin's script.**~~ **Closed 2026-08-01.** Four repositories
