@@ -36,21 +36,36 @@ module.exports = {
       //              `root_files` is an explicit list.
       //
       //   agents/, commands/, .claude/agents/, .claude/commands/
-      //              would be Claude Code plugin manifests, where frontmatter
-      //              is the routing contract rather than documentation. None
-      //              exist in this repository today; the exclusion is stated
-      //              so it stays true if any are added.
+      //              are Claude Code plugin manifests, where frontmatter is
+      //              the routing contract rather than documentation. They are
+      //              exempt from THIS schema, not from checking: sibling repos
+      //              (git-governance, docs-governance) scope these directories
+      //              and enforce `description` alone, because that is the one
+      //              field Claude Code actually routes on. None exist in this
+      //              repository today; the exemption is stated so it stays
+      //              true if any are added.
       //
       //   CHANGELOG.md
       //              follows Keep a Changelog, an external format standard
       //              that owns the file's structure. None exists here yet;
       //              stated so the register stays complete org-wide.
       //
+      //   local-notes/**
+      //              is git-untracked reference material, outside the governed
+      //              corpus entirely. It is out of `frontmatter` scope for the
+      //              same reason as anything untracked, and additionally
+      //              excluded from `internal-links` by directory name below,
+      //              because its links point at assets never copied here.
+      //
       // CLAUDE.md and AGENTS.md are NOT exceptions — they are entry points,
       // but no other system owns their frontmatter and nothing renders them
-      // verbatim, so they carry the schema like any other document.
+      // verbatim, so they carry the schema like any other document. AGENTS.md
+      // is the source of truth of the two; CLAUDE.md imports it with `@AGENTS.md`
+      // and states nothing itself. Both are still governed here, because the
+      // frontmatter is what puts them in the corpus at all.
       scope_dirs: ['docs'],
       root_files: [
+        'AGENTS.md',
         'CLAUDE.md',
         'GOVERNANCE.md',
         'CONTRIBUTING.md',
@@ -102,6 +117,7 @@ module.exports = {
       // changelog went unchecked when it was first added.
       scope_dirs: ['docs'],
       root_files: [
+        'AGENTS.md',
         'CLAUDE.md',
         'GOVERNANCE.md',
         'CONTRIBUTING.md',
@@ -129,10 +145,86 @@ module.exports = {
     },
 
     // ---- Phase 2+ content rules ----
-    // Deliberately left inert. Each one exists to pin a fact that has ALREADY
-    // drifted in this repository — adding entries speculatively is how a
-    // config turns into logic. The first real candidate is the exceptions
-    // list above, which is restated in docs/org-governance-adoption.md; if it
-    // drifts once, it becomes a `facts` entry rather than a manual fix.
+    // Each entry exists to pin a fact that has ALREADY drifted in this
+    // repository — adding entries speculatively is how a config turns into
+    // logic. `sum_decomposition`, `version_citations`, `dead_citations` and
+    // `sync_destinations` stay inert for exactly that reason: no real defect
+    // has motivated them here yet.
+    facts: {
+      // NOT shadow. `facts` ships shadow-on by default, which means it reports
+      // and never fails. A pin that cannot fail the build is decoration, and
+      // decoration is what let all three of these drift in the first place.
+      // Turning it off also makes the rule run under `--changed`, so
+      // pre-commit catches the drift instead of CI at promotion time.
+      shadow: false,
+      scope_dirs: ['docs'],
+      root_files: ['AGENTS.md', 'CLAUDE.md', 'REPOSITORY-CLASSIFICATION.md'],
+      entries: [
+        {
+          id: 'governance-compliance-artifacts',
+          value: 'CLAUDE.md, .pre-commit-config.yaml, .github/workflows/pr-checks.yml, '
+            + '.docgov.config.js, .claude/settings.json',
+          why: 'the five-artifact definition of "compliant" is what /git-check and '
+            + 'the adoption runbook both work from; the list already changed once '
+            + '(.claude/settings.json was added on 2026-08-01) and nothing checked '
+            + 'that every place stating it was updated together',
+          required_in: [
+            {
+              file: 'docs/org-governance-adoption.md',
+              pattern: /`CLAUDE\.md`[\s\S]*?`\.pre-commit-config\.yaml`[\s\S]*?`\.github\/workflows\/pr-checks\.yml`[\s\S]*?`\.docgov\.config\.js`[\s\S]*?`\.claude\/settings\.json`/,
+            },
+            { file: 'AGENTS.md', pattern: /five compliance artifacts/ },
+          ],
+        },
+        {
+          id: 'frontmatter-exceptions-register',
+          value: 'README.md, .github/PULL_REQUEST_TEMPLATE.md, .github/ISSUE_TEMPLATE/*.md, '
+            + 'agents+commands plugin manifests, CHANGELOG.md, local-notes/**',
+          why: 'this register is stated twice on purpose — once as the comment above, '
+            + 'once as a table in the runbook — and the two had already diverged: the '
+            + 'comment omitted local-notes/** entirely and both described the plugin-'
+            + 'manifest directories as unchecked when sibling repos do check them',
+          required_in: [
+            {
+              file: '.docgov.config.js',
+              pattern: /README\.md[\s\S]*?PULL_REQUEST_TEMPLATE\.md[\s\S]*?ISSUE_TEMPLATE[\s\S]*?commands\/[\s\S]*?CHANGELOG\.md[\s\S]*?local-notes/,
+            },
+            {
+              file: 'docs/org-governance-adoption.md',
+              pattern: /README\.md[\s\S]*?PULL_REQUEST_TEMPLATE\.md[\s\S]*?ISSUE_TEMPLATE[\s\S]*?commands\/\*\.md[\s\S]*?CHANGELOG\.md[\s\S]*?local-notes/,
+            },
+          ],
+        },
+        {
+          id: 'merge-method-policy',
+          value: 'develop: merge commit, squash | staging, main: merge commit only',
+          why: 'per-branch allowed_merge_methods is the one setting that structurally '
+            + 'prevents a squashed promotion from forking staging off develop; it is '
+            + 'stated as policy here and applied by git-governance\'s '
+            + 'setup-branch-protection.sh, so the copy an operator reads and the copy '
+            + 'a script applies can silently disagree',
+          required_in: [
+            {
+              file: 'AGENTS.md',
+              // Both cells are anchored on their closing `|`. Without that, the
+              // pattern matched a cell reading "merge commit, squash, rebase"
+              // as a prefix match and the pin silently passed — caught by
+              // deliberately breaking it rather than by trusting it.
+              pattern: /`develop`\s*\|\s*merge commit, squash\s*\|[\s\S]*?`staging`, `main`\s*\|\s*merge commit only\s*\|/,
+            },
+            {
+              file: 'docs/org-governance-adoption.md',
+              // Both cells are anchored on their closing `|`. Without that, the
+              // pattern matched a cell reading "merge commit, squash, rebase"
+              // as a prefix match and the pin silently passed — caught by
+              // deliberately breaking it rather than by trusting it.
+              pattern: /`develop`\s*\|\s*merge commit, squash\s*\|[\s\S]*?`staging`, `main`\s*\|\s*merge commit only\s*\|/,
+            },
+          ],
+          // the pre-2026-08-01 state: every branch accepting every method
+          forbidden: [/allowed_merge_methods.*\[\s*["']merge["'],\s*["']squash["'],\s*["']rebase["']\s*\]/],
+        },
+      ],
+    },
   },
 };
