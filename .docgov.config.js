@@ -162,18 +162,19 @@ module.exports = {
       entries: [
         {
           id: 'governance-compliance-artifacts',
-          value: 'CLAUDE.md, .pre-commit-config.yaml, .github/workflows/pr-checks.yml, '
-            + '.docgov.config.js, .claude/settings.json',
-          why: 'the five-artifact definition of "compliant" is what /git-check and '
-            + 'the adoption runbook both work from; the list already changed once '
-            + '(.claude/settings.json was added on 2026-08-01) and nothing checked '
-            + 'that every place stating it was updated together',
+          value: 'AGENTS.md, CLAUDE.md, .pre-commit-config.yaml, '
+            + '.github/workflows/pr-checks.yml, .docgov.config.js, .claude/settings.json',
+          why: 'the definition of "compliant" is what /git-check, the adoption '
+            + 'runbook, and platform-workflows\' governance-compliance.yml all work '
+            + 'from; the list has already changed TWICE in one day '
+            + '(.claude/settings.json, then AGENTS.md) and nothing but this entry '
+            + 'checks that every place stating it moved together',
           required_in: [
             {
               file: 'docs/org-governance-adoption.md',
-              pattern: /`CLAUDE\.md`[\s\S]*?`\.pre-commit-config\.yaml`[\s\S]*?`\.github\/workflows\/pr-checks\.yml`[\s\S]*?`\.docgov\.config\.js`[\s\S]*?`\.claude\/settings\.json`/,
+              pattern: /`AGENTS\.md`[\s\S]*?`CLAUDE\.md`[\s\S]*?`\.pre-commit-config\.yaml`[\s\S]*?`\.github\/workflows\/pr-checks\.yml`[\s\S]*?`\.docgov\.config\.js`[\s\S]*?`\.claude\/settings\.json`/,
             },
-            { file: 'AGENTS.md', pattern: /five compliance artifacts/ },
+            { file: 'AGENTS.md', pattern: /six compliance artifacts/ },
           ],
         },
         {

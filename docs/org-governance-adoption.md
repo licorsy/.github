@@ -3,7 +3,7 @@ title: "Org-Wide Governance Adoption"
 doc_type: manual
 description: "Runbook for the git-governance and docs-governance plugins across licorsy repositories: which repository owns which part of the automation, what a compliant repository looks like in-repo and on GitHub, how to bring an existing repository up to standard, and how a new repository inherits it."
 status: active
-version: "1.3.0"
+version: "1.4.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -46,7 +46,7 @@ ownership matrix.
 and merge-permission matrix, plus the slash commands and the
 `git-governance-advisor` subagent. Its `scripts/init-governance.sh` scaffolds
 `CLAUDE.md`, `.pre-commit-config.yaml`, `.github/workflows/pr-checks.yml`, and
-`.claude/settings.json` into a target repository — four of the five artifacts
+`.claude/settings.json` into a target repository — five of the six artifacts
 below. **It never overwrites an existing file** — it skips with a warning. In a
 repository created from `ai-assisted-sdd-template`, the template's own
 `CLAUDE.md` therefore wins; the `git-governance` copy is only the fallback for
@@ -69,11 +69,12 @@ and pinned to the floating `v1` tag. **Reusable CI belongs there, not in
 
 ## What "compliant" means
 
-A compliant repository carries five artifacts:
+A compliant repository carries six artifacts:
 
 | Artifact | Written by | Purpose |
 | --- | --- | --- |
-| `CLAUDE.md` | `init-governance.sh` | Branch, commit, and merge policy in force |
+| `AGENTS.md` | `init-governance.sh` | Branch, commit, and merge policy in force — the source of truth |
+| `CLAUDE.md` | `init-governance.sh` | A thin `@AGENTS.md` import, so Claude Code loads the same policy every other agent reads directly |
 | `.pre-commit-config.yaml` | `init-governance.sh` | The primary local gate |
 | `.github/workflows/pr-checks.yml` | `init-governance.sh` | Remote gate at promotion points only |
 | `.docgov.config.js` | `docgov init`, then edited | Which documents are governed, and how |
@@ -106,7 +107,7 @@ key is `plugin@marketplace`:
 
 ### Server-side settings a compliant repository carries
 
-The five artifacts above live in the repository. The settings below live on
+The six artifacts above live in the repository. The settings below live on
 GitHub, are applied by `git-governance`'s `scripts/setup-branch-protection.sh`,
 and are stated here so a repository can be *verified* compliant rather than
 assumed compliant after the script runs.
