@@ -39,8 +39,10 @@ and governance commands for Claude Code. Does not own organization-level
 defaults or project architecture.
 
 **`docs-governance`** — deterministic documentation-consistency checks,
-doc-specific CI validation, and doc review subagents. Does not own generic CI
-orchestration or business process content.
+doc-specific CI validation, and doc review subagents. It owns its own
+composite action, which callers invoke as a step; what it does not own is
+generic CI orchestration — deciding *when* checks run across plugins — or
+business process content.
 
 ### Method repository
 
@@ -79,26 +81,27 @@ capabilities above.
    repositories.
 5. The template defines **how projects are structured**, not how every
    organization-level policy is implemented.
-6. Plugins remain portable and usable outside Licorsy.
+6. Plugins should remain portable and usable outside Licorsy.
 
 ## Portability status
 
-Rule 6 is a real constraint, not an aspiration — it is what allows a plugin to
-be used in another organization. Verified state as of 2026-08-01:
+Rule 6 is the blueprint's wording and is deliberately a "should" — portability
+is a goal to be measured, not a gate that blocks a release. Verified state as
+of 2026-08-01:
 
 | Repository | Portable standalone? | Notes |
 | --- | --- | --- |
-| `git-governance` | Yes | No hardcoded organization outside prose; its one optional docs-governance CI step is guarded by `hashFiles` and self-disables |
+| `git-governance` | Yes, with one caveat | The `pr-checks.yml` it scaffolds hardcodes `licorsy/docs-governance/action@v1`, but the step is gated so it stays inert without a local `.docgov.config.js`. A fork that also uses docs-governance would run Licorsy's action until it repoints that line |
 | `docs-governance` | Yes | Engine is config-driven; all scoping comes from the consuming repository's `.docgov.config.js` |
 | `ai-assisted-sdd-template` | Content yes, CI no | See coupling gaps below |
 | `platform-workflows` | N/A | Organization-specific by design; it is the thing others point at |
 
 ## Known coupling gaps
 
-Tracked departures from the model above. Recording them here is deliberate: an
-undocumented gap gets rediscovered by every future audit, which is the failure
-mode this repository exists to stop. **Fixing these belongs to the owning
-repository, not to `.github`.**
+Open issues against the portability goal and the ownership matrix. Recording
+them here is deliberate: an undocumented gap gets rediscovered by every future
+audit, which is the failure mode this repository exists to stop. **Fixing these
+belongs to the owning repository, not to `.github`.**
 
 1. **`ai-assisted-sdd-template` CI hard-couples to the Licorsy organization.**
    Its `.github/workflows/pr-checks.yml` calls
@@ -117,11 +120,35 @@ repository, not to `.github`.**
    same template correctly delegates git operations to
    `git-governance-advisor` rather than restating the taxonomy.
 
-3. **No repository declares its plugins.** None of the five repositories
-   currently ships `.claude/settings.json` with `enabledPlugins`, so plugin
-   availability depends on each developer's local configuration rather than the
-   repository itself. `.github` closes this for itself as part of the adoption
-   work described in
+3. **The scaffolded `CLAUDE.md` describes a `.docgov.config.js` this
+   repository does not have.** Its "Documentation ownership" section cites
+   `facts` and `fragment_sync` entries, and an orphan
+   `<!-- fragment:branch-flow -->` marker with no counterpart, because the
+   file is copied verbatim from `git-governance`, where those entries do
+   exist. Correcting it locally would be undone by the next scaffold, so the
+   fix belongs in the plugin source. Same root cause as the stale-cache
+   incident recorded in
+   [`docs/org-governance-adoption.md`](docs/org-governance-adoption.md).
+
+4. **`.github/PULL_REQUEST_TEMPLATE.md` cites tooling absent here.** Its
+   checklist points at `.github/scripts/doc-scope.js` and
+   `documentation-metadata-standard.md`, neither of which exists in this
+   repository, and omits the `version-bump` rule that will actually fail a
+   PR. The file is in the frontmatter exceptions register and injected
+   verbatim into every pull request, so nothing mechanical will catch it.
+
+5. **`CONTRIBUTING.md` and `GOVERNANCE.md` still route document scope through
+   `CATEGORY_DIRS`.** They describe the `docs-governance` scope mechanism as
+   something that "may eventually" supersede it; in this repository
+   `.docgov.config.js` already governs. Both predate this batch and were left
+   unchanged apart from frontmatter.
+
+6. **Four repositories still do not declare their plugins.**
+   `git-governance`, `docs-governance`, `ai-assisted-sdd-template`, and
+   `platform-workflows` ship no `.claude/settings.json` with `enabledPlugins`,
+   so plugin availability there depends on each developer's local
+   configuration rather than on the repository. `.github` closed this for
+   itself on 2026-08-01 — see
    [`docs/org-governance-adoption.md`](docs/org-governance-adoption.md).
 
 ## Canonical source

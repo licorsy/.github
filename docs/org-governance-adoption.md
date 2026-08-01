@@ -91,7 +91,7 @@ key is `plugin@marketplace`:
 
 ## Documentation metadata
 
-Every Markdown file carries the frontmatter schema declared in
+Every tracked Markdown file carries the frontmatter schema declared in
 `.docgov.config.js`, with a fixed set of exceptions. A file is excluded when
 its frontmatter is already a functional contract owned by another system, or
 when another system renders or injects its raw content verbatim:
@@ -102,6 +102,7 @@ when another system renders or injects its raw content verbatim:
 | `.github/PULL_REQUEST_TEMPLATE.md` | Injected verbatim into every pull request body |
 | `.github/ISSUE_TEMPLATE/*.md` | Carries GitHub-mandated template frontmatter |
 | `agents/*.md`, `commands/*.md`, `.claude/agents/*.md`, `.claude/commands/*.md` | Claude Code plugin manifests; frontmatter is the routing contract |
+| `local-notes/**` | Git-untracked reference material, outside the governed corpus entirely — excluded from `internal-links` by directory name rather than from `frontmatter` by pattern |
 
 Every exclusion is recorded with its reason in the `.docgov.config.js` comment.
 A silent exclusion is how scope drift starts.
@@ -126,9 +127,11 @@ consequences are easy to get wrong:
    are required — they wire different hook stages.
 3. Add frontmatter to every Markdown file outside the exceptions above.
 4. Run `docgov init`, then edit `.docgov.config.js` by hand: set the
-   frontmatter scope and required fields, scope `changelog-retention` narrowly
-   to files that actually keep a changelog, and record every exclusion's
-   reason in a comment.
+   frontmatter scope and required fields, point `changelog-retention` at the
+   same corpus as `frontmatter` (the rule is a no-op for files without the
+   marker, so a wide scope imposes nothing and starts checking automatically
+   if a changelog is ever added), and record every exclusion's reason in a
+   comment.
 5. Add `.claude/settings.json` with `enabledPlugins`.
 6. Verify: `/git-check` reports Compliant, and `docgov check` passes.
 

@@ -1,7 +1,7 @@
 ---
 title: "Engineering Standards"
 doc_type: governance
-description: "Organization-wide engineering standards: the Lean + Spec-Driven Development delivery flow, the required quality gates at each promotion step, the standard document set every repository carries, and the tooling strategy."
+description: "Organization-wide engineering standards: the Lean + Spec-Driven Development delivery flow, the branch promotion model, the required quality gates at each promotion step, the standard document set every repository carries, the tooling strategy, and an addendum of tooling candidates that are explicitly not yet policy."
 status: active
 version: "1.0.0"
 created: 2026-08-01
@@ -17,7 +17,7 @@ related: [organizational-blueprint, architecture-principles, repository-classifi
 
 How work moves from idea to production across Licorsy repositories. This is an
 entry point: [`docs/licorsy-organizational-blueprint.md`](docs/licorsy-organizational-blueprint.md)
-is the canonical source, and Sections 6, 7, and 8 there are authoritative
+is the canonical source, and Sections 6, 7, 8, and 10 there are authoritative
 wherever this file summarizes.
 
 ## Delivery model
@@ -43,9 +43,9 @@ not by this repository.
 
 ## Branch model
 
-The standard progression is `feat/*` → `develop` → `staging` → `main`, with
-`develop` as the integration branch, `staging` as pre-production validation, and
-`main` as the production release branch.
+Work branches are promoted `develop` → `staging` → `main`, with `develop` as
+the integration branch, `staging` as pre-production validation, and `main` as
+the production release branch.
 
 **Branch naming, the full prefix taxonomy, merge permissions, and commit
 conventions are owned by [git-governance](https://github.com/licorsy/git-governance)
@@ -85,7 +85,9 @@ mode the blueprint's Section 5.1 ownership matrix exists to prevent.
 
 **Organization-level governance** (this repository): `GOVERNANCE.md`,
 `ARCHITECTURE-PRINCIPLES.md`, `ENGINEERING-STANDARDS.md`,
-`REPOSITORY-CLASSIFICATION.md`, `SECURITY-BASELINE.md`.
+`REPOSITORY-CLASSIFICATION.md`, `SECURITY-BASELINE.md`. This follows the
+blueprint's Section 7.1 list; its Section 4.1 gives the same set without
+`SECURITY-BASELINE.md`, and 7.1 is the one taken here.
 
 **Every product repository**, at minimum: `README.md`, `CLAUDE.md`, `AGENTS.md`
 (if applicable), `catalog-info.yaml`, `docs/adr/`, `docs/architecture/`,
@@ -99,10 +101,12 @@ mode the blueprint's Section 5.1 ownership matrix exists to prevent.
 
 ## Tooling strategy
 
-Licorsy prefers existing tools over internal replacements. The approved set —
-spanning source control, documentation, observability, security, testing,
+Licorsy prefers existing tools over internal replacements. The recommended set
+— spanning source control, documentation, observability, security, testing,
 infrastructure, and AI engineering — is enumerated in the blueprint's Section
-10 and is not duplicated here.
+10 and is not duplicated here. Several of its entries are alternatives rather
+than a stack to adopt wholesale (LangSmith *or* Langfuse, Semgrep *or*
+SonarQube Community, Tempo *or* Jaeger); read it as a shortlist per concern.
 
 Build internally only when the capability is core to competitive
 differentiation, market tools cannot express the governance or workflow needed,
@@ -117,9 +121,9 @@ rediscovering them:
 
 - **HashiCorp Vault** — secrets management for any future that is not
   AWS-only. The current baseline (AWS Secrets Manager) assumes a single cloud.
-- **LangGraph** — stateful, multi-step agent orchestration. Complements the
-  already-approved LangSmith/Langfuse, which cover observability rather than
-  orchestration.
+- **LangGraph** — stateful, multi-step agent orchestration. Complements
+  LangSmith/Langfuse, which cover observability rather than orchestration, and
+  so is an addition to that shortlist rather than a substitute for it.
 - **Excalidraw** — fast architecture sketching ahead of formal C4/Structurizr
   work.
 - **Vocabulary note** — Licorsy's SDD approach belongs to the same pattern
@@ -129,9 +133,10 @@ rediscovering them:
 
 Deliberately **not** proposed: Jira/Confluence, ServiceNow, TestRail, Splunk,
 Datadog, and ELK. Each is a reasonable enterprise choice, but the
-managed-services-first and golden-paths principles, combined with the
-organization's current Level 1 maturity, argue against that operational weight
-today. Worth revisiting at Level 3.
+managed-services-first and golden-paths principles argue against that
+operational weight while the organization is still establishing the earlier
+levels of the blueprint's maturity model. Worth revisiting once Level 3 is the
+working assumption.
 
 ## Canonical source
 

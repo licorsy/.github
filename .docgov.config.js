@@ -103,7 +103,9 @@ module.exports = {
       exclude_files: [],
       marker: 'Changelog:',
       max_entries: 3,
-      why: null,
+      why: 'unbounded in-body changelogs are what pushed the real history out of '
+        + 'reach in sibling repositories — the newest three belong in the file, '
+        + 'the rest belongs to `git log --follow`',
     },
 
     'version-bump': {

@@ -1,7 +1,7 @@
 ---
 title: "Governance"
 doc_type: governance
-description: "How decisions are made and changes are approved across the licorsy organization: ownership and the private contact channel, the Change-as-prompt gate, and semantic versioning for plugins and the process template."
+description: "How decisions are made and changes are approved across the licorsy organization: where the canonical operating model lives, ownership and the private contact channel, the Change-as-prompt gate, and semantic versioning for plugins and the process template."
 status: active
 version: "1.0.0"
 created: 2026-07-31

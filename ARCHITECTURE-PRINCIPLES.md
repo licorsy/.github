@@ -78,9 +78,13 @@ The default architectural posture for Licorsy products:
 - **Infrastructure as Code mandatory**
 - **Explicit threat modeling for internet-facing systems**
 
-These are defaults, not prohibitions. Departing from one is a legitimate
-decision — it is exactly the kind of trade-off principle 6 requires be recorded
-as an ADR, with its rationale and consequences.
+Most of these are defaults, not prohibitions. Departing from one is a
+legitimate decision — exactly the kind of trade-off principle 6 requires be
+recorded as an ADR, with its rationale and consequences.
+
+Two are stated by the blueprint as absolutes rather than defaults, and an ADR
+does not buy an exemption from them: **Infrastructure as Code is mandatory**,
+and **internet-facing systems get explicit threat modeling**.
 
 ## Canonical source
 
