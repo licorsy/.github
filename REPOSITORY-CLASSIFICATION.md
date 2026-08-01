@@ -1,9 +1,9 @@
 ---
 title: "Repository Classification"
 doc_type: governance
-description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, and the known coupling gaps currently tracked against that model."
+description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.0.0"
+version: "1.1.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -93,7 +93,7 @@ of 2026-08-01:
 | --- | --- | --- |
 | `git-governance` | Yes, with one caveat | The `pr-checks.yml` it scaffolds hardcodes `licorsy/docs-governance/action@v1`, but the step is gated so it stays inert without a local `.docgov.config.js`. A fork that also uses docs-governance would run Licorsy's action until it repoints that line |
 | `docs-governance` | Yes | Engine is config-driven; all scoping comes from the consuming repository's `.docgov.config.js` |
-| `ai-assisted-sdd-template` | Content yes, CI no | See coupling gaps below |
+| `ai-assisted-sdd-template` | Content yes, CI depends on Licorsy | See known gaps below |
 | `platform-workflows` | N/A | Organization-specific by design; it is the thing others point at |
 
 ## Known gaps
@@ -101,25 +101,40 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix — items 1, 2, 3, and 7 belong
-to other repositories; items 4, 5, and 6 are `.github`'s own.
+Each entry names the repository that owns the fix — items 1, 2, 3, and 8 belong
+to other repositories; items 4, 5, and 6 are `.github`'s own. Item 7 is closed
+and kept for the record.
 
-1. **`ai-assisted-sdd-template` CI hard-couples to the Licorsy organization.**
+1. **`ai-assisted-sdd-template` CI depends on Licorsy's reusable workflows.**
    Its `.github/workflows/pr-checks.yml` calls
    `licorsy/platform-workflows/.github/workflows/ci-docs.yml@v1` and
-   `ci-security.yml@v1` unconditionally, with no guard. A fork into another
-   organization would run CI against Licorsy's repositories until those `uses:`
-   lines are repointed. `git-governance` already demonstrates the fix: gate the
-   step so it self-disables when the corresponding config is absent.
+   `ci-security.yml@v1` as unguarded jobs. A repository created from the
+   template outside this organization inherits a dependency on workflow
+   definitions Licorsy controls and could change or delete.
 
-2. **Semantic doc-review duplication.**
-   `ai-assisted-sdd-template/.claude/agents/doc-consistency-reviewer.md`
-   duplicates `docs-governance/agents/doc-consistency-auditor.md` — same
-   purpose, tools, model, and method. The template already consolidated the
-   *mechanical* checks into the shared engine when it came online, but kept a
-   parallel copy of the *semantic* reviewer. This is inconsistent with how the
-   same template correctly delegates git operations to
-   `git-governance-advisor` rather than restating the taxonomy.
+   Two corrections to how this was first recorded, both from reading the file
+   rather than inferring from the `uses:` line. It does **not** run CI against
+   Licorsy's repositories — a public reusable workflow executes in the
+   *caller's* context, on the caller's runners. And the fix cannot be copied
+   from `git-governance`: that guard uses `hashFiles()`, which is valid in a
+   step-level `if:` but not in the job-level `if:` a reusable-workflow call
+   requires. The template's own comment records that as tested, not assumed.
+   A job-level `github.repository_owner` condition would work; whether a
+   template *should* ship CI that self-disables for its adopters is a design
+   question, not a defect to quietly patch.
+
+2. **Overlap between the template's doc-consistency reviewer and
+   `docs-governance`'s.** Both audit a document set for semantic drift with the
+   same tools and model. On inspection the overlap is narrower than it looks:
+   the template's `.claude/agents/doc-consistency-reviewer.md` is a thin
+   dispatcher into `agents/doc-consistency.md`, a versioned document with
+   `related:` edges into the SDD graph and framing tied to the phase model
+   ("once per cycle close, Phase 8 — Maintenance"). `docs-governance`'s auditor
+   is deliberately generic and repository-agnostic.
+
+   Consolidating would delete method content and break traceability edges, so
+   this is **recorded as accepted overlap, not scheduled for removal.** Revisit
+   only if the two prompts start disagreeing about what a finding is.
 
 3. **The scaffolded `CLAUDE.md` describes a `.docgov.config.js` this
    repository does not have.** Its "Documentation ownership" section cites
@@ -155,13 +170,24 @@ to other repositories; items 4, 5, and 6 are `.github`'s own.
    which makes `CLAUDE.md` formally non-conforming until the blueprint is
    revised. Resolve it in the blueprint, not by reverting `CLAUDE.md`.
 
-7. **Four repositories still do not declare their plugins.**
-   `git-governance`, `docs-governance`, `ai-assisted-sdd-template`, and
-   `platform-workflows` ship no `.claude/settings.json` with `enabledPlugins`,
-   so plugin availability there depends on each developer's local
-   configuration rather than on the repository. `.github` closed this for
-   itself on 2026-08-01 — see
+7. ~~**Repositories do not declare their plugins.**~~ **Closed 2026-08-01.**
+   All five repositories now ship `.claude/settings.json` with
+   `enabledPlugins`, so plugin availability belongs to the repository rather
+   than to each developer's local configuration — see
    [`docs/org-governance-adoption.md`](docs/org-governance-adoption.md).
+
+8. **The scaffolded `CLAUDE.md` no longer carries stale policy, but the
+   mechanism that let it can recur.** `git-governance` shipped seven commits
+   past its `v1.1.0` tag without a version bump, and because
+   `init-governance.sh` copies from the installed plugin cache rather than
+   from the repository, two repositories inherited a `CLAUDE.md` asserting
+   that `develop` is not protected server-side. Both were corrected by hand
+   and the v1.2.0 release moved the floating `v1` tag on 2026-08-01.
+
+   Nothing prevents a repeat: the cache resolves tags, so any future work
+   merged without a release silently diverges from what consumers receive.
+   A release checklist, or a check that the tag matches `main`, would close
+   it structurally.
 
 ## Canonical source
 
