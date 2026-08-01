@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.8.0"
+version: "1.9.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -109,10 +109,10 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 1, 2, 8, 9, 10, 13, and
-14 are open; items 3, 4, 5, 6, 7, 11, and 12 are closed — kept here with their
-resolution, because a gap that vanishes without a record gets rediscovered as a
-new finding by the next audit.
+Each entry names the repository that owns the fix. Items 1, 2, 8, 9, 10, 14, and
+15 are open; items 3, 4, 5, 6, 7, 11, 12, and 13 are closed — kept here with
+their resolution, because a gap that vanishes without a record gets rediscovered
+as a new finding by the next audit.
 
 1. **`ai-assisted-sdd-template` CI depends on Licorsy's reusable workflows.**
    Its `.github/workflows/pr-checks.yml` calls
@@ -257,14 +257,23 @@ new finding by the next audit.
     consumers when `main` does, since the plugin cache resolves tags — the same
     dependency recorded as item 8.
 
-13. **`docs-governance`'s CI guard has one clause while its `CLAUDE.md` claims
-    three.** Its `.github/workflows/pr-checks.yml` guards the docs-governance
-    step with `hashFiles('.docgov.config.js') != ''` alone, but its scaffolded
-    `CLAUDE.md` asserts all three of the event-name, config-presence, and
-    self-disable clauses. `git-governance` pins exactly this with a
-    `docs-governance-guard-clauses` fact; `docs-governance` has no `facts` entry
-    at all, which is why the drift survived in the one repository that ships the
-    engine.
+13. ~~**`docs-governance`'s CI guard has one clause while its `CLAUDE.md` claims
+    three.**~~ **Closed 2026-08-01.** The guard now carries all three clauses,
+    and both it and `git-governance` pin the value with a
+    `docs-governance-guard-clauses` fact. The root cause was the absence of that
+    pin: `git-governance` had one and stayed correct, `docs-governance` had no
+    `facts` entry at all. Both repositories now also run `facts` with
+    `shadow: false` — the rule ships shadow-on, reporting without failing, which
+    is why a pin that existed elsewhere still let this drift through.
+
+    Fixing it surfaced a second, worse defect three lines away, now also fixed
+    and pinned: the Conventional Commits step linted every subject in the PR
+    range, including the `Merge pull request #N from ...` subjects GitHub
+    generates itself. Those can never conform, so the check failed **by
+    construction on every promotion PR** — the exact pull request it exists to
+    guard. `git-governance` already carried the `--no-merges` fix; the scaffolded
+    copies never received it. **This repository had the broken form too**, and
+    is fixed in the same change — see item 15 for the one that remains.
 
 14. **Two other public repositories still name the private product
     repositories.** This repository stopped naming them on 2026-08-01 (see the
@@ -288,6 +297,20 @@ new finding by the next audit.
     (they explain why an exemption exists), and the template's are frozen
     historical record its own metadata standard forbids rewriting. Recorded so
     the decision is deliberate rather than overlooked.
+
+15. **`ai-assisted-sdd-template`'s commit lint still fails by construction on
+    promotion PRs.** Its `.github/workflows/pr-checks.yml` lints every subject in
+    the range without `--no-merges`, so the GitHub-generated
+    `Merge pull request #N from ...` subjects reach `conventional-pre-commit` and
+    cannot pass. Every `develop -> staging` PR contains at least one. The same
+    defect was fixed in `git-governance`, `docs-governance`, and this repository
+    on 2026-08-01; the template is the last copy carrying it.
+
+    It is a one-line change (`git log --no-merges --format=%s`) plus the comment
+    recording why, and it is worth pinning there with a `facts` entry the way the
+    other three now do. Left to that repository because its `pr-checks.yml` has a
+    different shape — it delegates to `platform-workflows` reusable workflows —
+    and it is the only repository whose workflow is not a scaffolded copy.
 
 ## Canonical source
 

@@ -224,6 +224,22 @@ module.exports = {
           // the pre-2026-08-01 state: every branch accepting every method
           forbidden: [/allowed_merge_methods.*\[\s*["']merge["'],\s*["']squash["'],\s*["']rebase["']\s*\]/],
         },
+        {
+          id: 'commit-msg-lint-skips-merges',
+          value: 'git log --no-merges --format=%s',
+          why: 'without --no-merges the Conventional Commits check lints the '
+            + '"Merge pull request #N from ..." subjects GitHub generates itself, '
+            + 'which can never conform — so it fails by construction on every '
+            + 'develop -> staging promotion, the exact PR it exists to guard. '
+            + 'This repository shipped the broken form until 2026-08-01, with '
+            + 'three such subjects already sitting in its promotion range',
+          required_in: [
+            {
+              file: '.github/workflows/pr-checks.yml',
+              pattern: /git log --no-merges --format=%s/,
+            },
+          ],
+        },
       ],
     },
   },
