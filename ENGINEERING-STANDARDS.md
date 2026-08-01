@@ -43,9 +43,9 @@ not by this repository.
 
 ## Branch model
 
-Work branches are promoted `develop` → `staging` → `main`, with `develop` as
-the integration branch, `staging` as pre-production validation, and `main` as
-the production release branch.
+Work branches merge into `develop`, which is then promoted `develop` →
+`staging` → `main`. `develop` is the integration branch, `staging` is
+pre-production validation, and `main` is the production release branch.
 
 **Branch naming, the full prefix taxonomy, merge permissions, and commit
 conventions are owned by [git-governance](https://github.com/licorsy/git-governance)
@@ -86,8 +86,9 @@ mode the blueprint's Section 5.1 ownership matrix exists to prevent.
 **Organization-level governance** (this repository): `GOVERNANCE.md`,
 `ARCHITECTURE-PRINCIPLES.md`, `ENGINEERING-STANDARDS.md`,
 `REPOSITORY-CLASSIFICATION.md`, `SECURITY-BASELINE.md`. This follows the
-blueprint's Section 7.1 list; its Section 4.1 gives the same set without
-`SECURITY-BASELINE.md`, and 7.1 is the one taken here.
+blueprint's Section 7.1. Its Section 4.1 lists a different set for the same
+repository — it adds `README.md` and the issue and pull request templates but
+omits `SECURITY-BASELINE.md` — and 7.1 is the one taken here.
 
 **Every product repository**, at minimum: `README.md`, `CLAUDE.md`, `AGENTS.md`
 (if applicable), `catalog-info.yaml`, `docs/adr/`, `docs/architecture/`,

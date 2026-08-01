@@ -31,14 +31,16 @@ The two files cover different surfaces and neither overrides the other:
   Scope section is a default that a repository's own `SECURITY.md` takes
   precedence over.
 - **This file** is the **organization-level set of infrastructure and
-  application security controls** that a repository with application code and
-  a deployment surface is expected to implement.
+  application security controls**. Its repository-level controls apply
+  everywhere; its runtime-level controls apply once there is a deployment
+  surface.
 
-A documentation or tooling repository needs the org `SECURITY.md` only. A
-repository with application code needs three things: the org `SECURITY.md`'s
-non-overridable LLM section, this baseline as the control set, and its **own**
-`SECURITY.md` describing its actual application and deployment surface — which
-is the artifact the org `SECURITY.md`'s Scope section asks for.
+A documentation or tooling repository needs the org `SECURITY.md` plus this
+file's repository-level controls. A repository with application code needs
+three things: the org `SECURITY.md`'s non-overridable LLM section, this
+baseline in full, and its **own** `SECURITY.md` describing its actual
+application and deployment surface — which is the artifact the org
+`SECURITY.md`'s Scope section asks for.
 
 ## Baseline controls
 
@@ -63,9 +65,17 @@ tooling ones:**
 - blameless RCA process
 
 The split is a reading of scope, not a relaxation: nothing here is optional for
-a repository that has the surface the control applies to. `.github` itself
-carries the repository-level three — its `develop`, `staging`, and `main` are
-covered server-side by a single active ruleset.
+a repository that has the surface the control applies to.
+
+**This repository does not yet meet its own repository-level baseline.** As of
+2026-08-01, `licorsy/.github` has branch protection — `develop`, `staging`, and
+`main` are covered server-side by one active ruleset — but secret scanning and
+Dependabot security updates are both disabled, and no workflow here runs
+dependency review. Stating that plainly is the point: a baseline whose own
+home repository quietly fails it is decoration. Closing the gap means enabling
+secret scanning and Dependabot on the repository, and consuming
+`platform-workflows`' `ci-security.yml`, which already implements dependency
+review and secret scanning as a reusable workflow.
 
 ## Additional controls for regulated or sensitive systems
 

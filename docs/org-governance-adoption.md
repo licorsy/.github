@@ -93,8 +93,9 @@ key is `plugin@marketplace`:
 
 Every tracked Markdown file carries the frontmatter schema declared in
 `.docgov.config.js`, with a fixed set of exceptions. A file is excluded when
-its frontmatter is already a functional contract owned by another system, or
-when another system renders or injects its raw content verbatim:
+its frontmatter is already a functional contract owned by another system, when
+another system renders or injects its raw content verbatim, or when the file is
+not part of the tracked corpus at all:
 
 | Excluded | Reason |
 | --- | --- |
@@ -146,9 +147,11 @@ already delegates git operations to `git-governance-advisor`.
 
 **Known gap:** as of 2026-08-01 the template ships no `.claude/settings.json`,
 so a repository created from it still needs that file added by hand. The same
-gap exists in all four platform repositories. It is tracked in
+gap exists in the other three repositories named above — `git-governance`,
+`docs-governance`, and `platform-workflows`. `.github` is currently the only
+repository that has closed it. Tracked in
 [REPOSITORY-CLASSIFICATION.md](../REPOSITORY-CLASSIFICATION.md) under "Known
-coupling gaps".
+gaps".
 
 ## Keeping the plugin cache honest
 
@@ -163,7 +166,7 @@ should be reported upstream so the plugin gets a proper release.
 
 ## Related work
 
-Fixes belonging to other repositories are recorded in
+Open gaps — in other repositories and in this one — are recorded in
 [REPOSITORY-CLASSIFICATION.md](../REPOSITORY-CLASSIFICATION.md) under "Known
-coupling gaps", not here. This runbook describes the standard; it does not
-track the backlog for repositories it does not own.
+gaps", not here. This runbook describes the standard; it does not track the
+backlog against it.

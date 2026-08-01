@@ -82,10 +82,10 @@ module.exports = {
     },
 
     'changelog-retention': {
-      // Scoped to the same corpus as `frontmatter`, minus README.md. No
-      // document here maintains a body changelog today, and the rule is a
-      // no-op for files without the marker — so this scope imposes nothing
-      // now and starts checking automatically if one is ever added.
+      // Scoped to exactly the same corpus as `frontmatter`. No document here
+      // maintains a body changelog today, and the rule is a no-op for files
+      // without the marker — so this scope imposes nothing now and starts
+      // checking automatically if one is ever added.
       scope_dirs: ['docs'],
       root_files: [
         'CLAUDE.md',

@@ -96,12 +96,13 @@ of 2026-08-01:
 | `ai-assisted-sdd-template` | Content yes, CI no | See coupling gaps below |
 | `platform-workflows` | N/A | Organization-specific by design; it is the thing others point at |
 
-## Known coupling gaps
+## Known gaps
 
-Open issues against the portability goal and the ownership matrix. Recording
-them here is deliberate: an undocumented gap gets rediscovered by every future
-audit, which is the failure mode this repository exists to stop. **Fixing these
-belongs to the owning repository, not to `.github`.**
+Open issues against this model and against the documents that describe it.
+Recording them here is deliberate: an undocumented gap gets rediscovered by
+every future audit, which is the failure mode this repository exists to stop.
+Each entry names the repository that owns the fix — items 1, 2, 3, and 7 belong
+to other repositories; items 4, 5, and 6 are `.github`'s own.
 
 1. **`ai-assisted-sdd-template` CI hard-couples to the Licorsy organization.**
    Its `.github/workflows/pr-checks.yml` calls
@@ -125,8 +126,10 @@ belongs to the owning repository, not to `.github`.**
    `facts` and `fragment_sync` entries, and an orphan
    `<!-- fragment:branch-flow -->` marker with no counterpart, because the
    file is copied verbatim from `git-governance`, where those entries do
-   exist. Correcting it locally would be undone by the next scaffold, so the
-   fix belongs in the plugin source. Same root cause as the stale-cache
+   exist. A local edit would survive re-scaffolding, since the script skips
+   files that already exist — but it would fork the shared file, and every
+   other repository scaffolded from the plugin inherits the same wrong text.
+   The fix belongs in the plugin source. Same root cause as the stale-cache
    incident recorded in
    [`docs/org-governance-adoption.md`](docs/org-governance-adoption.md).
 
@@ -140,10 +143,19 @@ belongs to the owning repository, not to `.github`.**
 5. **`CONTRIBUTING.md` and `GOVERNANCE.md` still route document scope through
    `CATEGORY_DIRS`.** They describe the `docs-governance` scope mechanism as
    something that "may eventually" supersede it; in this repository
-   `.docgov.config.js` already governs. Both predate this batch and were left
-   unchanged apart from frontmatter.
+   `.docgov.config.js` already governs. Both passages predate this batch and
+   were deliberately left alone, since rewriting them is a content change
+   rather than the metadata pass this work was scoped to.
 
-6. **Four repositories still do not declare their plugins.**
+6. **`CLAUDE.md` and the blueprint disagree on the branch prefix.**
+   `CLAUDE.md` uses `feat/*` and the six-prefix taxonomy; the blueprint's
+   Section 6.4 still says `feature/*`. `git-governance` renamed the prefix and
+   added `refactor/`, so `CLAUDE.md` reflects current practice and the
+   blueprint is the stale one — but this file states that the blueprint wins,
+   which makes `CLAUDE.md` formally non-conforming until the blueprint is
+   revised. Resolve it in the blueprint, not by reverting `CLAUDE.md`.
+
+7. **Four repositories still do not declare their plugins.**
    `git-governance`, `docs-governance`, `ai-assisted-sdd-template`, and
    `platform-workflows` ship no `.claude/settings.json` with `enabledPlugins`,
    so plugin availability there depends on each developer's local
