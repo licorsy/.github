@@ -1,3 +1,18 @@
+---
+title: "Support"
+doc_type: governance
+description: "Where to ask questions, report bugs, and request features across licorsy repositories, and why security concerns go through a different channel. Best-effort response times; no formal SLA."
+status: active
+version: "1.0.0"
+created: 2026-07-31
+updated: 2026-08-01
+language: en
+id: support
+owner: Alexandre Clemente
+tags: [support, issues, discussions]
+related: [governance, contributing, security-policy]
+---
+
 # Support
 
 This is a solo-maintained organization (see [GOVERNANCE.md](https://github.com/licorsy/.github/blob/main/GOVERNANCE.md)'s

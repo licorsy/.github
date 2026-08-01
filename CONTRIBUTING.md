@@ -1,3 +1,18 @@
+---
+title: "Contributing"
+doc_type: governance
+description: "Org-wide contribution conventions inherited by every licorsy repository without its own CONTRIBUTING.md: the Change-as-prompt principle and its two compliance paths, prompt lifecycle, file naming, documentation metadata, local validation, and pull request expectations."
+status: active
+version: "1.0.0"
+created: 2026-07-31
+updated: 2026-08-01
+language: en
+id: contributing
+owner: Alexandre Clemente
+tags: [contributing, change-as-prompt, conventions, pull-requests]
+related: [governance, security-policy, organizational-blueprint]
+---
+
 # Contributing
 
 This organization's projects follow the Spec-Driven Development process defined in
