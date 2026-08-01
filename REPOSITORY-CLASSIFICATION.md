@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.7.0"
+version: "1.8.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -109,8 +109,8 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 1, 2, 8, 9, 10, 11, 12,
-13, and 14 are open; items 3, 4, 5, 6, and 7 are closed — kept here with their
+Each entry names the repository that owns the fix. Items 1, 2, 8, 9, 10, 13, and
+14 are open; items 3, 4, 5, 6, 7, 11, and 12 are closed — kept here with their
 resolution, because a gap that vanishes without a record gets rediscovered as a
 new finding by the next audit.
 
@@ -227,24 +227,35 @@ new finding by the next audit.
     scaffold `AGENTS.md` plus a thin `CLAUDE.md`, and repoint its own pins.
     Until then the four sibling repositories keep the old shape.
 
-11. **Branch protection was applied to four of five repositories by something
-    other than the plugin's script.** `scripts/setup-branch-protection.sh`
-    creates one ruleset per branch, named `protect-develop` / `protect-staging` /
-    `protect-main`, and sets `delete_branch_on_merge` on the repository. What is
-    actually live on `.github`, `git-governance`, `docs-governance`, and
-    `platform-workflows` is a single ruleset named `branch-protection` spanning
-    all three refs — correct in its rules, but created some other way, which is
-    why `delete_branch_on_merge` is still `false` on all four.
-    `ai-assisted-sdd-template` carries **both** schemes, four overlapping
-    rulesets. The two are not interchangeable: a single ruleset spanning three
-    refs cannot give `develop` and `staging`/`main` different
-    `allowed_merge_methods`, so the per-branch scheme is the one to converge on.
+11. ~~**Branch protection was applied to four of five repositories by something
+    other than the plugin's script.**~~ **Closed 2026-08-01.** Four repositories
+    carried a single ruleset named `branch-protection` spanning all three refs
+    instead of the per-branch `protect-<branch>` scheme the script creates,
+    which is why `delete_branch_on_merge` was still `false` on all four;
+    `ai-assisted-sdd-template` carried both schemes at once. All five now run the
+    per-branch scheme, the legacy rulesets are removed, and
+    `delete_branch_on_merge` is `true` everywhere — verified by reading each
+    ruleset back from the API.
 
-12. **`/git-check` reports a false negative on those same four repositories.**
-    It looks for a ruleset named `protect-<branch>`, finds none, and reports
-    branch protection as missing on repositories that are in fact protected.
-    Owned by `git-governance`; the fix is to recognize the legacy name rather
-    than to rename the live rulesets first.
+    The per-branch shape is not cosmetic. A single ruleset spanning three refs
+    has one `allowed_merge_methods` and so cannot give `develop` a different
+    merge policy from `staging`/`main`, which is what the org-wide merge policy
+    requires. `setup-branch-protection.sh` now also deletes a legacy ruleset when
+    it finds one — after the per-branch rulesets are in place, never before.
+
+12. ~~**`/git-check` reports a false negative on those same four repositories.**~~
+    **Closed 2026-08-01, in both directions.** It matched on the ruleset's
+    *name*, so it reported four genuinely protected repositories as unprotected.
+
+    Item 11's migration removed the symptom — every ruleset is now named
+    `protect-<branch>`, so even the old name-matching logic reports correctly.
+    That is luck, not a fix, so the check was corrected as well: it now matches
+    on `conditions.ref_name.include` and would survive the same divergence
+    happening again.
+
+    **The corrected check is on `git-governance`'s `develop` only.** It reaches
+    consumers when `main` does, since the plugin cache resolves tags — the same
+    dependency recorded as item 8.
 
 13. **`docs-governance`'s CI guard has one clause while its `CLAUDE.md` claims
     three.** Its `.github/workflows/pr-checks.yml` guards the docs-governance
