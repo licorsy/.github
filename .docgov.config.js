@@ -91,10 +91,15 @@ module.exports = {
     },
 
     'changelog-retention': {
-      // Scoped to exactly the same corpus as `frontmatter`. No document here
-      // maintains a body changelog today, and the rule is a no-op for files
-      // without the marker — so this scope imposes nothing now and starts
-      // checking automatically if one is ever added.
+      // Scoped to exactly the same corpus as `frontmatter`. The blueprint is
+      // the one document here carrying a body changelog; the rule is a no-op
+      // for the rest, which have no marker line.
+      //
+      // The marker below must match the heading line EXACTLY — the engine
+      // compares `line.trim() === marker`, so "Changelog of this document:"
+      // (the convention in ai-assisted-sdd-template) would be silently
+      // skipped rather than flagged. That is precisely how the blueprint's
+      // changelog went unchecked when it was first added.
       scope_dirs: ['docs'],
       root_files: [
         'CLAUDE.md',

@@ -3,7 +3,7 @@ title: "Governance"
 doc_type: governance
 description: "How decisions are made and changes are approved across the licorsy organization: where the canonical operating model lives, ownership and the private contact channel, the Change-as-prompt gate, and semantic versioning for plugins and the process template."
 status: active
-version: "1.0.0"
+version: "1.1.0"
 created: 2026-07-31
 updated: 2026-08-01
 language: en
@@ -41,9 +41,9 @@ the Change-as-prompt principle below. A repository using the full mechanism reco
 them as Architecture Decision Records (ADRs) in `docs/adr/`, following the format in
 `ai-assisted-sdd-template`; see [CONTRIBUTING.md](https://github.com/licorsy/.github/blob/main/CONTRIBUTING.md)'s Change-as-prompt table for the
 lightweight path's equivalent (the merged PR is the record — no `docs/adr/` file
-required). In repositories that use that tooling, whether `docs/adr/` carries
-living-document frontmatter is governed by the `CATEGORY_DIRS` enumeration
-CONTRIBUTING.md's Conventions section describes; this file doesn't restate that list.
+required). Whether `docs/adr/` carries living-document frontmatter is governed by
+that repository's own `.docgov.config.js`, as CONTRIBUTING.md's Conventions section
+describes; this file doesn't restate the scope.
 
 ## Change process
 

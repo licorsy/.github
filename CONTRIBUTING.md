@@ -3,7 +3,7 @@ title: "Contributing"
 doc_type: governance
 description: "Org-wide contribution conventions inherited by every licorsy repository without its own CONTRIBUTING.md: the Change-as-prompt principle and its two compliance paths, prompt lifecycle, file naming, documentation metadata, local validation, and pull request expectations."
 status: active
-version: "1.0.0"
+version: "1.1.0"
 created: 2026-07-31
 updated: 2026-08-01
 language: en
@@ -79,16 +79,17 @@ prompt except the blank scaffold; update it alongside any status change.
   `075-prompt-governance-hygiene-batch.md`). GitHub-mandated files in `.github/` keep
   the exact names GitHub requires (`CODEOWNERS`, `ISSUE_TEMPLATE/`,
   `PULL_REQUEST_TEMPLATE.md`).
-- **Documentation metadata** (repositories with `.github/scripts/doc-scope.js`): every
-  Markdown file in the living-document directories or in-scope root files carries the
-  YAML frontmatter schema described in `docs/manuals/documentation-metadata-standard.md`
-  Section 1. `doc-scope.js`'s `CATEGORY_DIRS` is authoritative for which *directories*
-  are in scope; Section 1 is authoritative for which *root files* are (`QUICKSTART.md`
-  is the only one) — the two enumerate different things and don't compete.
-  The `CATEGORY_DIRS` mechanism is what's authoritative for now; it may eventually
-  be superseded by the `docs-governance` plugin's own scope mechanism (see
-  GOVERNANCE.md's "Plugin and
-  process-template versioning" section).
+- **Documentation metadata**: every tracked Markdown file carries the YAML frontmatter
+  schema, so the corpus stays machine-enumerable. Scope is declared in each
+  repository's own `.docgov.config.js` and enforced by the `docs-governance` engine.
+  A file is excluded only when another system already owns its frontmatter as a
+  functional contract (Claude Code plugin manifests, GitHub issue templates) or
+  renders its raw content verbatim (`README.md`, `CHANGELOG.md`, the PR template) —
+  the register with each exclusion's reason is in
+  [`docs/org-governance-adoption.md`](https://github.com/licorsy/.github/blob/main/docs/org-governance-adoption.md).
+  Repositories scaffolded from `ai-assisted-sdd-template` additionally route their
+  *directory* scope through `.github/scripts/doc-scope.js`, which that repository's
+  `.docgov.config.js` imports rather than duplicating.
 - **Local validation gate** (repositories with `.pre-commit-config.yaml`): projects use
   `pre-commit` as their primary gate. After cloning, run `pre-commit install` and
   `pre-commit install --hook-type commit-msg` once. The configured hooks are file
@@ -103,8 +104,12 @@ prompt except the blank scaffold; update it alongside any status change.
 
 ## Pull requests
 
-Use `.github/PULL_REQUEST_TEMPLATE.md`'s checklist. Its first item recognizes both
-rows of the table above (an approved `docs/prompts/` file, or this PR's own
-description where there's no `docs/prompts/` directory), plus the separate
-trivial/obviously-reversible exemption. The remaining items (living-document
-frontmatter, prompt `status`) only apply where the corresponding tooling exists.
+Use `.github/PULL_REQUEST_TEMPLATE.md`'s checklist. Because this repository has no
+`docs/prompts/` directory, that template is written for the lightweight path: the
+PR description is the proposal record, subject to the same
+trivial/obviously-reversible exemption. Its other two items — frontmatter currency
+and the `version` bump — apply to any governed Markdown file the PR touches.
+
+A repository that adopts the full mechanism should extend its own copy of the
+template with the `docs/prompts/` items rather than expecting this one to carry
+them.
