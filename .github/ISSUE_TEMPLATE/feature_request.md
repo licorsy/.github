@@ -15,8 +15,7 @@ labels: enhancement
 
 ## Note
 
-Non-trivial changes go through the Change-as-prompt rule
-(`docs/manuals/operation-manual.md`, Step 12) before implementation — a
-`docs/prompts/NNN-<slug>.md` gets drafted first. See `CONTRIBUTING.md` for the full
-flow. This issue can stay as the initial ask; the prompt draft is a separate
-follow-up.
+Non-trivial changes go through the Change-as-prompt principle. See
+`CONTRIBUTING.md`'s Change-as-prompt table for which of the two compliance paths
+applies to this repository and when the proposal record is due. This issue can stay
+as the initial ask; the prompt draft (or PR) is a separate follow-up.
