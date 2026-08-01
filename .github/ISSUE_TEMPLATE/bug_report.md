@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Something in this project's governance/tooling is broken
+about: Something in this project's governance, docs, or tooling is broken
 title: "[Bug] "
 labels: bug
 ---
