@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.11.0"
+version: "1.12.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -109,10 +109,10 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 1, 2, 8, 9, 10, 14, and
-16 are open; items 3, 4, 5, 6, 7, 11, 12, 13, and 15 are closed — kept here with
-their resolution, because a gap that vanishes without a record gets rediscovered
-as a new finding by the next audit.
+Each entry names the repository that owns the fix. Items 1, 2, 8, 9, 10, and 14
+are open; items 3, 4, 5, 6, 7, 11, 12, 13, 15, and 16 are closed — kept here
+with their resolution, because a gap that vanishes without a record gets
+rediscovered as a new finding by the next audit.
 
 1. **`ai-assisted-sdd-template` CI depends on Licorsy's reusable workflows.**
    Its `.github/workflows/pr-checks.yml` calls
@@ -313,23 +313,28 @@ as a new finding by the next audit.
     predated both. The fix was not the flag — it was turning the pin into
     something that can fail.
 
-16. **`platform-workflows` carries one of the five compliance artifacts.**
-    Measured on 2026-08-01, the other four repositories are 5/5;
-    `platform-workflows` has only `.claude/settings.json` and is missing
-    `CLAUDE.md`, `.pre-commit-config.yaml`, `.github/workflows/pr-checks.yml`,
-    and `.docgov.config.js`.
+16. ~~**`platform-workflows` carries one of the five compliance artifacts.**~~
+    **Closed 2026-08-01.** All five repositories are now 5/5, measured rather
+    than asserted. `platform-workflows` also runs its own
+    `governance-compliance.yml` against itself at `strict: true`, referenced by
+    path rather than by tag — a caller pins the released tag, but the repository
+    hosting a workflow has to test the revision in the pull request, or a change
+    is only exercised after it ships.
 
-    It went unnoticed because nothing measured it until
-    `platform-workflows`' own new `governance-compliance.yml` was tested against
-    a deliberately non-compliant repository, and the nearest one to hand was
-    itself. The workflow that reports this now lives in the least compliant
-    repository in the organization.
+    It went unnoticed because nothing measured it. The gap surfaced only when
+    that workflow needed a deliberately non-compliant repository to test
+    against, and the nearest one to hand was itself — which is the general
+    lesson worth keeping: **the check and the thing it checks were the same
+    repository, so nothing was watching it.** The five-artifact list had been
+    stated in this register since it was written; stating it is what made it
+    look covered.
 
-    Backfilling is a decision, not a cleanup: scaffolding `pre-commit` and
-    `pr-checks.yml` there changes how that repository is validated on every
-    commit and promotion, and `.docgov.config.js` implies a governed document
-    corpus it does not currently claim to have. Running `/git-check` there would
-    scaffold the first three; the fourth needs a deliberate scope.
+    The `.docgov.config.js` scope turned out not to be the open question it
+    looked like. That repository holds two Markdown files — `README.md`, already
+    an org-wide frontmatter exception, and the newly scaffolded `CLAUDE.md` — so
+    the corpus is one file and `scope_dirs` is empty. The full eight-field
+    schema still applies: a repository small enough to skip it is where the
+    exception starts spreading.
 
 ## Canonical source
 
