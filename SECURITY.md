@@ -1,3 +1,18 @@
+---
+title: "Security Policy"
+doc_type: governance
+description: "Org-wide security policy: how to report a concern privately, the default scope for repositories shipping no application code, and the non-overridable LLM/AI-specific operating rules mapped to the OWASP Top 10 for LLM Applications."
+status: active
+version: "1.0.0"
+created: 2026-07-31
+updated: 2026-08-01
+language: en
+id: security-policy
+owner: Alexandre Clemente
+tags: [security, llm-risk, owasp, disclosure]
+related: [security-baseline, governance, contributing]
+---
+
 # Security Policy
 
 Two sections of this policy behave differently under a per-repo override. The

@@ -1,3 +1,18 @@
+---
+title: "Code of Conduct"
+doc_type: governance
+description: "Contributor Covenant v2.1, adopted org-wide, with Licorsy-specific notes on what \"community leaders\" means in a solo-maintained organization and how to file a conduct report privately."
+status: active
+version: "1.0.0"
+created: 2026-07-31
+updated: 2026-08-01
+language: en
+id: code-of-conduct
+owner: Alexandre Clemente
+tags: [conduct, community, contributor-covenant]
+related: [governance, support, security-policy]
+---
+
 # Contributor Covenant Code of Conduct
 
 ## Our Pledge

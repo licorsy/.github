@@ -1,4 +1,27 @@
+---
+title: "Governance"
+doc_type: governance
+description: "How decisions are made and changes are approved across the licorsy organization: where the canonical operating model lives, ownership and the private contact channel, the Change-as-prompt gate, and semantic versioning for plugins and the process template."
+status: active
+version: "1.0.0"
+created: 2026-07-31
+updated: 2026-08-01
+language: en
+id: governance
+owner: Alexandre Clemente
+tags: [governance, decision-making, versioning]
+related: [organizational-blueprint, contributing, security-policy, code-of-conduct]
+---
+
 # Governance
+
+## Canonical operating model
+
+This file covers decision-making and change process. The organization's full
+operating model — principles, repository architecture, engineering standards,
+security baseline, maturity path — is
+[`docs/licorsy-organizational-blueprint.md`](docs/licorsy-organizational-blueprint.md),
+which is authoritative wherever any other document summarizes it.
 
 ## Ownership
 
