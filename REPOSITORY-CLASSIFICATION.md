@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.12.0"
+version: "1.13.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -109,10 +109,11 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 1, 2, 8, 9, 10, and 14
-are open; items 3, 4, 5, 6, 7, 11, 12, 13, 15, and 16 are closed — kept here
-with their resolution, because a gap that vanishes without a record gets
-rediscovered as a new finding by the next audit.
+Each entry names the repository that owns the fix. Items 1, 8, 9, 10, and 14 are
+open; items 2 and 17 are **accepted** — real overlaps, deliberately not
+scheduled for removal; items 3, 4, 5, 6, 7, 11, 12, 13, 15, and 16 are closed —
+kept here with their resolution, because a gap that vanishes without a record
+gets rediscovered as a new finding by the next audit.
 
 1. **`ai-assisted-sdd-template` CI depends on Licorsy's reusable workflows.**
    Its `.github/workflows/pr-checks.yml` calls
@@ -198,6 +199,18 @@ rediscovered as a new finding by the next audit.
    merged without a release silently diverges from what consumers receive.
    A release checklist, or a check that the tag matches `main`, would close
    it structurally.
+
+   **Still open after the 2026-08-01 v1.3.0 releases.** Both `git-governance`
+   and `docs-governance` were released properly that day, each with a checklist
+   in its promotion pull request — but a checklist written per release is a
+   habit, not a mechanism, and this entry is about the mechanism. The tagging
+   itself also produced a near-miss worth recording: `git tag -f v1 v1.3.0`
+   points the floating tag at the *tag object* rather than the commit, and
+   `git rev-list -n1 v1` still resolves to the right commit, so it looks
+   correct. It was caught by git's own nested-tag hint and fixed with
+   `v1.3.0^{}`, then verified against `ls-remote`'s peeled refs. An automated
+   check comparing the tag to `main` would have caught both this and the
+   original skipped release.
 
 9. **Dependency review is still missing; the rest of the security baseline is
    now met.** The gap as first recorded was understated — it named only this
@@ -335,6 +348,39 @@ rediscovered as a new finding by the next audit.
     the corpus is one file and `scope_dirs` is empty. The full eight-field
     schema still applies: a repository small enough to skip it is where the
     exception starts spreading.
+
+17. **Overlap between `ai-assisted-sdd-template`'s `check-adapter-sync.js` and
+    `docs-governance`'s `fragment_sync`.** Both keep a block of prose identical
+    across two files. **Recorded as accepted overlap, not scheduled for
+    removal** — the same disposition as item 2, and for a comparable reason.
+
+    The technical blocker is gone: `docs-governance` v1.3.0 added an optional
+    `anchor` to `fragment_sync`, which was the one thing the bespoke script did
+    that the engine could not. Before that, swapping them would have silently
+    dropped the check that the heading a block restates still exists, making it
+    a regression rather than a deduplication.
+
+    It is still not worth doing, on two grounds that outweigh the duplication:
+
+    - The template's own `docs/prompts/004` already considered adopting
+      `fragment_sync` and deferred it, with a stated revisit condition —
+      "revisit only if a concrete gap surfaces." No gap has surfaced. The script
+      has no defect; what changed is only that an alternative became viable,
+      which is an argument about tidiness, not a concrete gap.
+    - The script is named in an **active** ADR (`ADR-0003`, principles 2 and 5),
+      the operation manual's tooling table, and the README. Removing it means
+      amending an accepted architectural decision, and leaves eight citations in
+      frozen record — `docs/prompts/001`/`003`/`004`, `CHANGELOG.md`,
+      `PROPOSAL-TRACKING.md` — permanently naming a deleted file, which that
+      repository's metadata standard forbids rewriting.
+
+    Amending an active ADR to delete a hundred lines that work is a bad trade.
+    Revisit only if the script actually breaks, or if a second repository needs
+    the same behaviour — at which point the engine already supports it.
+
+    The engine feature is not wasted either way: `anchor` is a general
+    capability available to every consumer, and it is what makes this an
+    accepted overlap by choice rather than by necessity.
 
 ## Canonical source
 
