@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.9.0"
+version: "1.10.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -109,8 +109,8 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 1, 2, 8, 9, 10, 14, and
-15 are open; items 3, 4, 5, 6, 7, 11, 12, and 13 are closed — kept here with
+Each entry names the repository that owns the fix. Items 1, 2, 8, 9, 10, and 14
+are open; items 3, 4, 5, 6, 7, 11, 12, 13, and 15 are closed — kept here with
 their resolution, because a gap that vanishes without a record gets rediscovered
 as a new finding by the next audit.
 
@@ -298,19 +298,20 @@ as a new finding by the next audit.
     historical record its own metadata standard forbids rewriting. Recorded so
     the decision is deliberate rather than overlooked.
 
-15. **`ai-assisted-sdd-template`'s commit lint still fails by construction on
-    promotion PRs.** Its `.github/workflows/pr-checks.yml` lints every subject in
-    the range without `--no-merges`, so the GitHub-generated
-    `Merge pull request #N from ...` subjects reach `conventional-pre-commit` and
-    cannot pass. Every `develop -> staging` PR contains at least one. The same
-    defect was fixed in `git-governance`, `docs-governance`, and this repository
-    on 2026-08-01; the template is the last copy carrying it.
+15. ~~**`ai-assisted-sdd-template`'s commit lint still fails by construction on
+    promotion PRs.**~~ **Closed 2026-08-01.** All four repositories that run this
+    check now pass `--no-merges`, and all four pin it with a
+    `commit-msg-lint-skips-merges` fact at `shadow: false`. The template captured
+    the change as `docs/prompts/005-fix-commit-lint-merge-subjects.md` first, per
+    its own Step 12 rule.
 
-    It is a one-line change (`git log --no-merges --format=%s`) plus the comment
-    recording why, and it is worth pinning there with a `facts` entry the way the
-    other three now do. Left to that repository because its `pr-checks.yml` has a
-    different shape — it delegates to `platform-workflows` reusable workflows —
-    and it is the only repository whose workflow is not a scaffolded copy.
+    Worth keeping the shape of this one on record, because it is the failure mode
+    this register exists for. A single defect propagated to three repositories by
+    scaffolding, and stayed invisible in all three for the same reason: the
+    `facts` rule that would have caught it ships **shadow-on**, reporting without
+    failing. `git-governance` had the fix and the pin; every copy made from it
+    predated both. The fix was not the flag — it was turning the pin into
+    something that can fail.
 
 ## Canonical source
 
