@@ -1,9 +1,9 @@
 ---
 title: "Org-Wide Governance Adoption"
 doc_type: manual
-description: "Runbook for the git-governance and docs-governance plugins across licorsy repositories: which repository owns which part of the automation, what a compliant repository looks like, how to bring an existing repository up to standard, and how a new repository inherits it."
+description: "Runbook for the git-governance and docs-governance plugins across licorsy repositories: which repository owns which part of the automation, what a compliant repository looks like in-repo and on GitHub, how to bring an existing repository up to standard, and how a new repository inherits it."
 status: active
-version: "1.1.0"
+version: "1.2.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -89,6 +89,45 @@ key is `plugin@marketplace`:
 }
 ```
 
+### Server-side settings a compliant repository carries
+
+The five artifacts above live in the repository. The settings below live on
+GitHub, are applied by `git-governance`'s `scripts/setup-branch-protection.sh`,
+and are stated here so a repository can be *verified* compliant rather than
+assumed compliant after the script runs.
+
+One ruleset per protected branch, each with `deletion`, `non_fast_forward`, and
+a `pull_request` rule at `required_approving_review_count: 0` and
+`bypass_actors: []`. Merge methods differ per branch:
+
+| Target | Allowed merge methods |
+| --- | --- |
+| `develop` | merge commit, squash |
+| `staging`, `main` | merge commit only |
+
+Rebase-merge is disabled at the repository level, and `delete_branch_on_merge`
+is enabled so work branches are cleaned up automatically. The protected branches
+survive that setting: GitHub exempts protected branches from auto-delete, and
+the `deletion` rule blocks it independently — which is what keeps `develop`, the
+head branch of every `develop -> staging` promotion, from being deleted when a
+promotion merges.
+
+Per-branch merge methods are the point, not a detail. A squashed
+`develop -> staging` merge rewrites the promoted commits, so `staging` stops
+sharing history with `develop` and the next promotion re-conflicts on work
+already merged. Restricting promotions to merge commits removes that failure
+mode structurally rather than by convention.
+
+**What these settings cannot do** is restrict *who* merges into `staging` or
+`main`. GitHub cannot distinguish the owner from an agent using the owner's
+token, and requiring an approving review would lock a solo maintainer out of
+their own promotion branches, since GitHub forbids self-approval. That gate is
+therefore behavioral — see
+[AGENTS.md](../AGENTS.md), "Why the `staging`/`main` gate is behavioral, not
+server-side". Making it server-side requires giving the agent a separate
+identity (GitHub App or machine user); until that exists, raising the approval
+count is a regression, not a hardening.
+
 ## Documentation metadata
 
 Every tracked Markdown file carries the frontmatter schema declared in
@@ -102,7 +141,7 @@ not part of the tracked corpus at all:
 | `README.md` | Rendered as the public repository or organization profile; GitHub renders frontmatter as a visible table |
 | `.github/PULL_REQUEST_TEMPLATE.md` | Injected verbatim into every pull request body |
 | `.github/ISSUE_TEMPLATE/*.md` | Carries GitHub-mandated template frontmatter |
-| `agents/*.md`, `commands/*.md`, `.claude/agents/*.md`, `.claude/commands/*.md` | Claude Code plugin manifests; frontmatter is the routing contract |
+| `agents/*.md`, `commands/*.md`, `.claude/agents/*.md`, `.claude/commands/*.md` | Claude Code plugin manifests; frontmatter is the routing contract. Exempt from *this* schema, not from checking — see below |
 | `CHANGELOG.md` | Follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), an external format standard that owns the file's structure |
 | `local-notes/**` | Git-untracked reference material, outside the governed corpus entirely — excluded from `internal-links` by directory name rather than from `frontmatter` by pattern |
 
@@ -110,8 +149,19 @@ not part of the tracked corpus at all:
 points, but no other system owns their frontmatter and nothing renders them
 verbatim, so they carry the schema like any other document.
 
-Every exclusion is recorded with its reason in the `.docgov.config.js` comment.
-A silent exclusion is how scope drift starts.
+"Excluded" above means **excluded from the eight-field schema, not unchecked.**
+The plugin-manifest row is the case where the distinction bites:
+`git-governance` and `docs-governance` both put `agents/` and `commands/` in
+`scope_dirs` and enforce `required: ['description']` on them, because
+`description` is the one field Claude Code actually routes on. Reading that row
+as "these directories are never validated" is wrong, and was wrong in this
+register until 2026-08-01. A repository that ships plugin manifests should scope
+them with the reduced schema rather than skipping them.
+
+Every exclusion is recorded with its reason in the `.docgov.config.js` comment,
+and the two copies of this register are pinned against each other by a `facts`
+entry — correcting one alone will now fail `docgov check`. A silent exclusion is
+how scope drift starts; an unpinned register is how the correction drifts back.
 
 The parser is deliberately naive — `key: value`, first occurrence wins. Four
 consequences are easy to get wrong:
