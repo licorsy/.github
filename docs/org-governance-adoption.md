@@ -3,7 +3,7 @@ title: "Org-Wide Governance Adoption"
 doc_type: manual
 description: "Runbook for the git-governance and docs-governance plugins across licorsy repositories: which repository owns which part of the automation, what a compliant repository looks like in-repo and on GitHub, how to bring an existing repository up to standard, and how a new repository inherits it."
 status: active
-version: "1.2.0"
+version: "1.3.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -76,6 +76,19 @@ A compliant repository carries five artifacts:
 | `.github/workflows/pr-checks.yml` | `init-governance.sh` | Remote gate at promotion points only |
 | `.docgov.config.js` | `docgov init`, then edited | Which documents are governed, and how |
 | `.claude/settings.json` | by hand | Declares `enabledPlugins` so plugin availability belongs to the repo |
+
+Compliance is now measurable rather than asserted:
+`platform-workflows`' `governance-compliance.yml` checks all five as a reusable
+workflow, advisory by default and failing with `strict: true`. It is a presence
+check on purpose — what each file must *say* is enforced by `pre-commit` and
+`docgov` against the repository's own config, and re-checking that in a workflow
+would fork the rules.
+
+```yaml
+jobs:
+  governance-compliance:
+    uses: licorsy/platform-workflows/.github/workflows/governance-compliance.yml@v1
+```
 
 `enabledPlugins` is an **object with boolean values**, not an array, and each
 key is `plugin@marketplace`:
