@@ -11,7 +11,7 @@ labels: bug
 
 ## Where
 
-<!-- File(s) affected: agents/, docs/manuals/, docs/prompts/, .github/scripts/, etc. -->
+<!-- File(s) affected. Name whichever exist in the repository you're reporting against — e.g. docs/, agents/, commands/, .github/workflows/, .github/scripts/. -->
 
 ## Expected vs. actual
 

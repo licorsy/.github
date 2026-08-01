@@ -4,7 +4,7 @@ subtitle: "Operating Model, Engineering Standards, and Platform Architecture"
 doc_type: governance
 description: "Canonical operating model for Licorsy — organizational principles, repository architecture and ownership boundaries, architecture and engineering standards, security and reliability baseline, tooling strategy, maturity model, and governance cadence."
 status: active
-version: "1.0.0"
+version: "1.1.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -16,6 +16,19 @@ related: [architecture-principles, engineering-standards, repository-classificat
 ---
 
 # Licorsy Organizational Blueprint
+
+Changelog:
+
+- v1.1.0: First revision since intake. Section 6.4's branch progression corrected
+  `feature/*` → `feat/*` and pointed at `git-governance` for the full prefix
+  taxonomy, resolving a contradiction where this file was declared canonical while
+  `CLAUDE.md` carried the current names. Section 11's and 13's source path
+  corrected to `personal-os/state/resources.md`, the file that actually exists.
+  **The body is no longer verbatim intake text** — v1.0.0 in `git log` is the
+  archived original.
+- v1.0.0: Intake, body verbatim from the source blueprint.
+
+---
 
 ## 1. Purpose
 
@@ -295,12 +308,15 @@ Default architectural posture for Licorsy products:
 
 Licorsy standard branch progression:
 
-`feature/*` -> `develop` -> `staging` -> `main`
+`feat/*` -> `develop` -> `staging` -> `main`
 
 Rules:
 - `develop`: integration branch
 - `staging`: pre-production validation branch
 - `main`: production release branch
+
+The full prefix taxonomy (`feat`, `fix`, `refactor`, `docs`, `chore`, `hotfix`)
+and the merge-permission matrix are owned by `git-governance`, not restated here.
 
 ## 7. Standard document set
 
@@ -471,7 +487,7 @@ Licorsy should build internal tools only when:
 
 ## 11. Resource and capability management
 
-Licorsy should maintain a living **Resource Inventory** sourced from `personal-os/resource.md`.
+Licorsy should maintain a living **Resource Inventory** sourced from `personal-os/state/resources.md`.
 
 This inventory must classify:
 - budget and runway;
@@ -485,6 +501,10 @@ This inventory must classify:
 
 Required output artifact:
 - `personal-os/docs/resources/resource-inventory.md`
+
+`personal-os/state/resources.md` already exists and is actively maintained as the
+source inventory; the artifact above is the derived, publishable view and does not
+exist yet.
 
 Recommended sections:
 1. Financial runway
@@ -535,7 +555,7 @@ Characteristics:
 - add architecture document kit
 - add observability baseline kit
 - add security baseline kit
-- create `resource-inventory.md` from `personal-os/resource.md`
+- create `resource-inventory.md` from `personal-os/state/resources.md`
 
 ### 61–90 days
 - onboard at least one real product using the full model

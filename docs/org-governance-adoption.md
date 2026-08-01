@@ -3,7 +3,7 @@ title: "Org-Wide Governance Adoption"
 doc_type: manual
 description: "Runbook for the git-governance and docs-governance plugins across licorsy repositories: which repository owns which part of the automation, what a compliant repository looks like, how to bring an existing repository up to standard, and how a new repository inherits it."
 status: active
-version: "1.0.0"
+version: "1.1.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -134,10 +134,13 @@ consequences are easy to get wrong:
 3. Add frontmatter to every Markdown file outside the exceptions above.
 4. Run `docgov init`, then edit `.docgov.config.js` by hand: set the
    frontmatter scope and required fields, point `changelog-retention` at the
-   same corpus as `frontmatter` (the rule is a no-op for files without the
-   marker, so a wide scope imposes nothing and starts checking automatically
-   if a changelog is ever added), and record every exclusion's reason in a
-   comment.
+   same corpus as `frontmatter`, and record every exclusion's reason in a
+   comment. The retention rule is a no-op for files without the marker, so a
+   wide scope imposes nothing — but the `marker` must match the heading line
+   **exactly** (the engine compares `line.trim() === marker`), so a document
+   using a different wording is silently skipped rather than flagged. Confirm
+   the count in `docgov check`'s output matches the number of documents that
+   actually keep a changelog.
 5. Add `.claude/settings.json` with `enabledPlugins`.
 6. Verify: `/git-check` reports Compliant, and `docgov check` passes.
 
@@ -150,13 +153,11 @@ forked by config and duplication returns through the side door.
 Create it from `ai-assisted-sdd-template`, which ships the SDD scaffold and
 already delegates git operations to `git-governance-advisor`.
 
-**Known gap:** as of 2026-08-01 the template ships no `.claude/settings.json`,
-so a repository created from it still needs that file added by hand. The same
-gap exists in the other three repositories named above — `git-governance`,
-`docs-governance`, and `platform-workflows`. `.github` is currently the only
-repository that has closed it. Tracked in
-[REPOSITORY-CLASSIFICATION.md](../REPOSITORY-CLASSIFICATION.md) under "Known
-gaps".
+All five repositories — `.github`, `git-governance`, `docs-governance`,
+`ai-assisted-sdd-template`, and `platform-workflows` — now ship
+`.claude/settings.json` with both plugins declared, closed on 2026-08-01. A
+repository created from the template therefore inherits the declaration rather
+than needing it added by hand.
 
 ## Keeping the plugin cache honest
 

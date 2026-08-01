@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.1.0"
+version: "1.3.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -101,9 +101,10 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix — items 1, 2, 3, and 8 belong
-to other repositories; items 4, 5, and 6 are `.github`'s own. Item 7 is closed
-and kept for the record.
+Each entry names the repository that owns the fix. Items 1, 2, 3, 8, and 9 are
+open; items 4, 5, 6, and 7 are closed — kept here with their resolution, because
+a gap that vanishes without a record gets rediscovered as a new finding by the
+next audit.
 
 1. **`ai-assisted-sdd-template` CI depends on Licorsy's reusable workflows.**
    Its `.github/workflows/pr-checks.yml` calls
@@ -136,39 +137,46 @@ and kept for the record.
    this is **recorded as accepted overlap, not scheduled for removal.** Revisit
    only if the two prompts start disagreeing about what a finding is.
 
-3. **The scaffolded `CLAUDE.md` describes a `.docgov.config.js` this
-   repository does not have.** Its "Documentation ownership" section cites
-   `facts` and `fragment_sync` entries, and an orphan
-   `<!-- fragment:branch-flow -->` marker with no counterpart, because the
-   file is copied verbatim from `git-governance`, where those entries do
-   exist. A local edit would survive re-scaffolding, since the script skips
-   files that already exist — but it would fork the shared file, and every
-   other repository scaffolded from the plugin inherits the same wrong text.
-   The fix belongs in the plugin source. Same root cause as the stale-cache
-   incident recorded in
-   [`docs/org-governance-adoption.md`](docs/org-governance-adoption.md).
+3. **The scaffolded `CLAUDE.md` cites `.docgov.config.js` entries this
+   repository's config does not define.** Its "Documentation ownership" section
+   describes `facts` and `fragment_sync` entries, and carries a
+   `<!-- fragment:branch-flow:start -->` / `:end` pair, because the file is
+   copied from `git-governance`, where both entries exist. This repository does
+   have a `.docgov.config.js` — it simply declares neither, so the fragment
+   markers are inert and the prose describes enforcement that is not running
+   here.
 
-4. **`.github/PULL_REQUEST_TEMPLATE.md` cites tooling absent here.** Its
-   checklist points at `.github/scripts/doc-scope.js` and
-   `documentation-metadata-standard.md`, neither of which exists in this
-   repository, and omits the `version-bump` rule that will actually fail a
-   PR. The file is in the frontmatter exceptions register and injected
-   verbatim into every pull request, so nothing mechanical will catch it.
+   The "don't edit locally, it would fork the shared file" reasoning that
+   originally deferred this no longer applies: the local copy already differs
+   from the plugin's in `title`, `description`, and `related`, deliberately, as
+   part of the scaffolding-reset convention. What remains is deciding whether
+   the plugin should describe config entries a scaffolded copy will not have —
+   which is a question for the plugin source, not this repository.
 
-5. **`CONTRIBUTING.md` and `GOVERNANCE.md` still route document scope through
-   `CATEGORY_DIRS`.** They describe the `docs-governance` scope mechanism as
-   something that "may eventually" supersede it; in this repository
-   `.docgov.config.js` already governs. Both passages predate this batch and
-   were deliberately left alone, since rewriting them is a content change
-   rather than the metadata pass this work was scoped to.
+4. ~~**`.github/PULL_REQUEST_TEMPLATE.md` cites tooling absent here.**~~
+   **Closed 2026-08-01.** The checklist referenced `.github/scripts/doc-scope.js`,
+   `CATEGORY_DIRS`, `documentation-metadata-standard.md`, and `docs/prompts/` —
+   none of which exist in this repository — and omitted the `version-bump` rule
+   that actually fails a PR. Rewritten against what this repository has.
+   Nothing mechanical would have caught it: the file is in the frontmatter
+   exceptions register precisely because it is injected verbatim into every
+   pull request.
 
-6. **`CLAUDE.md` and the blueprint disagree on the branch prefix.**
-   `CLAUDE.md` uses `feat/*` and the six-prefix taxonomy; the blueprint's
-   Section 6.4 still says `feature/*`. `git-governance` renamed the prefix and
-   added `refactor/`, so `CLAUDE.md` reflects current practice and the
-   blueprint is the stale one — but this file states that the blueprint wins,
-   which makes `CLAUDE.md` formally non-conforming until the blueprint is
-   revised. Resolve it in the blueprint, not by reverting `CLAUDE.md`.
+5. ~~**`CONTRIBUTING.md` and `GOVERNANCE.md` route document scope through
+   `CATEGORY_DIRS`.**~~ **Closed 2026-08-01.** Both now describe
+   `.docgov.config.js` as the governing mechanism, which it already was here,
+   instead of one that "may eventually" supersede `CATEGORY_DIRS`.
+   `CONTRIBUTING.md` keeps a pointer to `doc-scope.js` for repositories
+   scaffolded from `ai-assisted-sdd-template`, where that file does exist and
+   the config imports it.
+
+6. ~~**`CLAUDE.md` and the blueprint disagree on the branch prefix.**~~
+   **Closed 2026-08-01** by blueprint v1.1.0, which corrected Section 6.4 to
+   `feat/*` and pointed at `git-governance` for the full taxonomy rather than
+   restating it. Sections 11 and 13's source path were corrected to
+   `personal-os/state/resources.md` in the same revision.
+   The blueprint body is consequently **no longer verbatim intake text**;
+   v1.0.0 in `git log` is the archived original.
 
 7. ~~**Repositories do not declare their plugins.**~~ **Closed 2026-08-01.**
    All five repositories now ship `.claude/settings.json` with
@@ -188,6 +196,15 @@ and kept for the record.
    merged without a release silently diverges from what consumers receive.
    A release checklist, or a check that the tag matches `main`, would close
    it structurally.
+
+9. **This repository does not meet its own security baseline.** Secret scanning
+   and Dependabot security updates are disabled, and no workflow here runs
+   dependency review — while
+   [`SECURITY-BASELINE.md`](SECURITY-BASELINE.md) requires all three of every
+   serious repository. Both fixes are repository settings, not code, so they
+   cannot be applied by a pull request. Recorded here as well as in
+   `SECURITY-BASELINE.md` so this register stays the single place to read for
+   what is open.
 
 ## Canonical source
 
