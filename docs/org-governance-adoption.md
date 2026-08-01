@@ -103,7 +103,12 @@ not part of the tracked corpus at all:
 | `.github/PULL_REQUEST_TEMPLATE.md` | Injected verbatim into every pull request body |
 | `.github/ISSUE_TEMPLATE/*.md` | Carries GitHub-mandated template frontmatter |
 | `agents/*.md`, `commands/*.md`, `.claude/agents/*.md`, `.claude/commands/*.md` | Claude Code plugin manifests; frontmatter is the routing contract |
+| `CHANGELOG.md` | Follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), an external format standard that owns the file's structure |
 | `local-notes/**` | Git-untracked reference material, outside the governed corpus entirely — excluded from `internal-links` by directory name rather than from `frontmatter` by pattern |
+
+`CLAUDE.md` and `AGENTS.md` are **not** exceptions. They are repository entry
+points, but no other system owns their frontmatter and nothing renders them
+verbatim, so they carry the schema like any other document.
 
 Every exclusion is recorded with its reason in the `.docgov.config.js` comment.
 A silent exclusion is how scope drift starts.

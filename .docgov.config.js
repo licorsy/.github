@@ -40,6 +40,15 @@ module.exports = {
       //              is the routing contract rather than documentation. None
       //              exist in this repository today; the exclusion is stated
       //              so it stays true if any are added.
+      //
+      //   CHANGELOG.md
+      //              follows Keep a Changelog, an external format standard
+      //              that owns the file's structure. None exists here yet;
+      //              stated so the register stays complete org-wide.
+      //
+      // CLAUDE.md and AGENTS.md are NOT exceptions — they are entry points,
+      // but no other system owns their frontmatter and nothing renders them
+      // verbatim, so they carry the schema like any other document.
       scope_dirs: ['docs'],
       root_files: [
         'CLAUDE.md',
