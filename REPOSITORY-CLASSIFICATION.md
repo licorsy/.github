@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.4.0"
+version: "1.5.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -109,10 +109,10 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 1, 2, 3, 8, and 9 are
-open; items 4, 5, 6, and 7 are closed — kept here with their resolution, because
-a gap that vanishes without a record gets rediscovered as a new finding by the
-next audit.
+Each entry names the repository that owns the fix. Items 1, 2, 8, 9, 10, 11, 12,
+and 13 are open; items 3, 4, 5, 6, and 7 are closed — kept here with their
+resolution, because a gap that vanishes without a record gets rediscovered as a
+new finding by the next audit.
 
 1. **`ai-assisted-sdd-template` CI depends on Licorsy's reusable workflows.**
    Its `.github/workflows/pr-checks.yml` calls
@@ -145,21 +145,15 @@ next audit.
    this is **recorded as accepted overlap, not scheduled for removal.** Revisit
    only if the two prompts start disagreeing about what a finding is.
 
-3. **The scaffolded `CLAUDE.md` cites `.docgov.config.js` entries this
-   repository's config does not define.** Its "Documentation ownership" section
-   describes `facts` and `fragment_sync` entries, and carries a
-   `<!-- fragment:branch-flow:start -->` / `:end` pair, because the file is
-   copied from `git-governance`, where both entries exist. This repository does
-   have a `.docgov.config.js` — it simply declares neither, so the fragment
-   markers are inert and the prose describes enforcement that is not running
-   here.
-
-   The "don't edit locally, it would fork the shared file" reasoning that
-   originally deferred this no longer applies: the local copy already differs
-   from the plugin's in `title`, `description`, and `related`, deliberately, as
-   part of the scaffolding-reset convention. What remains is deciding whether
-   the plugin should describe config entries a scaffolded copy will not have —
-   which is a question for the plugin source, not this repository.
+3. ~~**The scaffolded `CLAUDE.md` cites `.docgov.config.js` entries this
+   repository's config does not define.**~~ **Closed 2026-08-01.** The prose
+   described `facts` and `fragment_sync` entries that did not exist here, and
+   carried an inert `<!-- fragment:branch-flow -->` marker pair with no
+   destination. Resolved from both ends: the policy moved to
+   [`AGENTS.md`](AGENTS.md) (item 10), the orphan markers were dropped because
+   this repository's `README.md` carries no branch-flow diagram to sync against,
+   and `.docgov.config.js` now declares three real `facts` entries — so the
+   prose describes enforcement that is actually running.
 
 4. ~~**`.github/PULL_REQUEST_TEMPLATE.md` cites tooling absent here.**~~
    **Closed 2026-08-01.** The checklist referenced `.github/scripts/doc-scope.js`,
@@ -213,6 +207,44 @@ next audit.
    cannot be applied by a pull request. Recorded here as well as in
    `SECURITY-BASELINE.md` so this register stays the single place to read for
    what is open.
+
+10. **This repository's `AGENTS.md` has no counterpart in the plugin that
+    scaffolds it.** `AGENTS.md` is now the source of truth here and `CLAUDE.md`
+    is a one-line `@AGENTS.md` import, but `git-governance`'s
+    `init-governance.sh` still scaffolds a full `CLAUDE.md` and its own
+    `.docgov.config.js` still pins `facts` and `fragment_sync` against
+    `CLAUDE.md`. So this repository is deliberately ahead of the plugin, and a
+    re-scaffold would not reproduce it. The fix belongs to `git-governance`:
+    scaffold `AGENTS.md` plus a thin `CLAUDE.md`, and repoint its own pins.
+    Until then the four sibling repositories keep the old shape.
+
+11. **Branch protection was applied to four of five repositories by something
+    other than the plugin's script.** `scripts/setup-branch-protection.sh`
+    creates one ruleset per branch, named `protect-develop` / `protect-staging` /
+    `protect-main`, and sets `delete_branch_on_merge` on the repository. What is
+    actually live on `.github`, `git-governance`, `docs-governance`, and
+    `platform-workflows` is a single ruleset named `branch-protection` spanning
+    all three refs — correct in its rules, but created some other way, which is
+    why `delete_branch_on_merge` is still `false` on all four.
+    `ai-assisted-sdd-template` carries **both** schemes, four overlapping
+    rulesets. The two are not interchangeable: a single ruleset spanning three
+    refs cannot give `develop` and `staging`/`main` different
+    `allowed_merge_methods`, so the per-branch scheme is the one to converge on.
+
+12. **`/git-check` reports a false negative on those same four repositories.**
+    It looks for a ruleset named `protect-<branch>`, finds none, and reports
+    branch protection as missing on repositories that are in fact protected.
+    Owned by `git-governance`; the fix is to recognize the legacy name rather
+    than to rename the live rulesets first.
+
+13. **`docs-governance`'s CI guard has one clause while its `CLAUDE.md` claims
+    three.** Its `.github/workflows/pr-checks.yml` guards the docs-governance
+    step with `hashFiles('.docgov.config.js') != ''` alone, but its scaffolded
+    `CLAUDE.md` asserts all three of the event-name, config-presence, and
+    self-disable clauses. `git-governance` pins exactly this with a
+    `docs-governance-guard-clauses` fact; `docs-governance` has no `facts` entry
+    at all, which is why the drift survived in the one repository that ships the
+    engine.
 
 ## Canonical source
 
