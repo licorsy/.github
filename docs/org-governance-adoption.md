@@ -45,11 +45,13 @@ ownership matrix.
 **`git-governance`** owns the branch-naming taxonomy, commit-message format,
 and merge-permission matrix, plus the slash commands and the
 `git-governance-advisor` subagent. Its `scripts/init-governance.sh` scaffolds
-`CLAUDE.md`, `.pre-commit-config.yaml`, and `.github/workflows/pr-checks.yml`
-into a target repository. **It never overwrites an existing file** — it skips
-with a warning. In a repository created from `ai-assisted-sdd-template`, the
-template's own `CLAUDE.md` therefore wins; the `git-governance` copy is only
-the fallback for repositories that have none.
+`CLAUDE.md`, `.pre-commit-config.yaml`, `.github/workflows/pr-checks.yml`, and
+`.claude/settings.json` into a target repository — four of the five artifacts
+below. **It never overwrites an existing file** — it skips with a warning. In a
+repository created from `ai-assisted-sdd-template`, the template's own
+`CLAUDE.md` therefore wins; the `git-governance` copy is only the fallback for
+repositories that have none. The same rule protects a target that already
+declares its own `enabledPlugins`.
 
 **`docs-governance`** owns mechanical documentation consistency: a rule engine
 driven entirely by the consuming repository's `.docgov.config.js`, plus two
@@ -75,7 +77,7 @@ A compliant repository carries five artifacts:
 | `.pre-commit-config.yaml` | `init-governance.sh` | The primary local gate |
 | `.github/workflows/pr-checks.yml` | `init-governance.sh` | Remote gate at promotion points only |
 | `.docgov.config.js` | `docgov init`, then edited | Which documents are governed, and how |
-| `.claude/settings.json` | by hand | Declares `enabledPlugins` so plugin availability belongs to the repo |
+| `.claude/settings.json` | `init-governance.sh` | Declares `enabledPlugins` so plugin availability belongs to the repo |
 
 Compliance is now measurable rather than asserted:
 `platform-workflows`' `governance-compliance.yml` checks all five as a reusable
@@ -191,7 +193,8 @@ consequences are easy to get wrong:
 ## Bringing an existing repository up to standard
 
 1. Run `/git-check`. It audits and, with confirmation, runs
-   `init-governance.sh` for the three files it owns.
+   `init-governance.sh` for the four files it owns, including
+   `.claude/settings.json`.
 2. Run `pre-commit install && pre-commit install --hook-type commit-msg`. Both
    are required — they wire different hook stages.
 3. Add frontmatter to every Markdown file outside the exceptions above.
@@ -204,8 +207,11 @@ consequences are easy to get wrong:
    using a different wording is silently skipped rather than flagged. Confirm
    the count in `docgov check`'s output matches the number of documents that
    actually keep a changelog.
-5. Add `.claude/settings.json` with `enabledPlugins`.
-6. Verify: `/git-check` reports Compliant, and `docgov check` passes.
+5. Confirm `.claude/settings.json` declares both plugins. Step 1 writes it, but
+   it skips a file that already exists — so a repository that had a partial one
+   keeps it unchanged.
+6. Verify: `/git-check` reports Compliant, `docgov check` passes, and
+   `governance-compliance.yml` reports 5/5.
 
 Configuration declares **data, never logic**. If a check does not exist, it
 belongs in the engine, not in a repository's config — otherwise the engine gets
