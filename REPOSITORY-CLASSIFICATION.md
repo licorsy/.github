@@ -3,9 +3,9 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.17.0"
+version: "1.18.0"
 created: 2026-08-01
-updated: 2026-08-01
+updated: 2026-08-02
 language: en
 id: repository-classification
 owner: Alexandre Clemente
@@ -109,11 +109,20 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 1, 8, 9, 14, 18, and
-19 are open; items 2 and 17 are **accepted** — real overlaps, deliberately not
-scheduled for removal; items 3, 4, 5, 6, 7, 10, 11, 12, 13, 15, and 16 are
-closed — kept here with their resolution, because a gap that vanishes without a
-record gets rediscovered as a new finding by the next audit.
+Each entry names the repository that owns the fix. Item 1 is open; items 2, 14,
+and 17 are **accepted** — real states, deliberately not scheduled for change;
+items 3–13, 15, 16, 18, and 19 are closed — kept here with their resolution,
+because a gap that vanishes without a record gets rediscovered as a new finding
+by the next audit.
+
+**On sequencing.** Gaps 9, 18, and 19 were closed as a single change per
+repository rather than one promotion each. That was a correction. Gap 8 had just
+been closed on its own, and because landing it moved `main` without carrying a
+version bump, it forced an entire second release cycle to make
+`release-integrity` green again. Anything that lands on `main` moves `main`, and
+`main` moving without a tag is exactly the drift that check detects — so the
+version bump belongs *in* the change, not after it. Batch independent gaps;
+promote once; tag in the same breath.
 
 1. **`ai-assisted-sdd-template` CI depends on Licorsy's reusable workflows.**
    Its `.github/workflows/pr-checks.yml` calls
@@ -233,17 +242,20 @@ record gets rediscovered as a new finding by the next audit.
    "workflow not found". That is three repositories affected by this gap, not
    the one it was opened for.
 
-9. **Dependency review is still missing; the rest of the security baseline is
-   now met.** The gap as first recorded was understated — it named only this
-   repository, but secret scanning and Dependabot were disabled on **all five**.
-   Both are now enabled everywhere, along with secret-scanning push protection,
-   which refuses a push containing a credential rather than reporting it
-   afterwards. See [`SECURITY-BASELINE.md`](SECURITY-BASELINE.md) for the
-   verified per-control state.
+9. ~~**Dependency review is missing.**~~ **Closed 2026-08-02.** The gap as first
+   recorded was understated — it named only this repository, but secret scanning
+   and Dependabot were disabled on **all five**. Both are now enabled
+   everywhere, along with secret-scanning push protection, which refuses a push
+   containing a credential rather than reporting it afterwards. See
+   [`SECURITY-BASELINE.md`](SECURITY-BASELINE.md) for the verified per-control
+   state.
 
-   What remains open is dependency review: `platform-workflows`'
-   `ci-security.yml` implements it as a reusable workflow and no repository here
-   calls it.
+   Dependency review is now wired: every repository calls
+   `platform-workflows`' `ci-security.yml`, which self-gates the
+   dependency-review job to `staging`/`main` and runs secret scanning on every
+   trigger. No repository ships a dependency manifest yet, so dependency-review
+   currently passes trivially — wired now so the coverage exists the moment one
+   appears, rather than depending on someone remembering then.
 
    Also recorded there, because it fails silently: secret-scanning validity
    checks cannot be enabled on this organization. They require GitHub Advanced
@@ -325,8 +337,17 @@ record gets rediscovered as a new finding by the next audit.
     copies never received it. **This repository had the broken form too**, and
     is fixed in the same change — see item 15 for the one that remains.
 
-14. **Two other public repositories still name the private product
-    repositories.** This repository stopped naming them on 2026-08-01 (see the
+14. **ACCEPTED (2026-08-02): two other public repositories name the private
+    product repositories, deliberately.** Reviewed and left as-is. The
+    provenance comments explain *why* each exemption exists, which is
+    load-bearing for anyone reading the rule later, and the template's
+    occurrences are frozen historical record its own metadata standard forbids
+    rewriting. Neither names anything sensitive — the repositories are private,
+    their names are not credentials. Recorded as accepted so it stops
+    resurfacing as a finding in every future audit. The original assessment
+    follows.
+
+    This repository stopped naming them on 2026-08-01 (see the
     blueprint's v1.2.0 changelog entry), but the same names remain in
     `docs-governance` — 15 occurrences across 9 source files, as provenance
     comments recording which private repository each rule was extracted from —
@@ -419,8 +440,16 @@ record gets rediscovered as a new finding by the next audit.
     capability available to every consumer, and it is what makes this an
     accepted overlap by choice rather than by necessity.
 
-18. **Nothing enforces that `staging`/`main` receive only promotions.** The
-    rulesets require a pull request and block direct pushes, force-pushes, and
+18. ~~**Nothing enforces that `staging`/`main` receive only promotions.**~~
+    **Closed 2026-08-02** by a `promotion-source` job in `pr-checks.yml`, which
+    fails any pull request into `staging` not from `develop`, and into `main`
+    not from `staging`. `hotfix/` is not an exception — the taxonomy is explicit
+    that the label signals urgency, not a bypass route. It lives in
+    `pr-checks.yml` rather than `platform-workflows` because `git-governance`
+    scaffolds that file verbatim, so every repository receives the guard with no
+    extra wiring. The original finding follows.
+
+    The rulesets require a pull request and block direct pushes, force-pushes, and
     deletion — but they place no constraint on which branch a pull request comes
     *from*. `AGENTS.md`'s branch flow says `develop -> staging` and
     `staging -> main` are promotions and never a starting point for new work;
@@ -444,8 +473,17 @@ record gets rediscovered as a new finding by the next audit.
     `release-integrity.yml`, which exists for the same shape of problem —
     a policy stated in prose with nothing verifying it.
 
-19. **The CI Conventional Commits lint cannot prevent anything.** It runs only
-    on pull requests into `staging`/`main`, and on a `develop -> staging` pull
+19. ~~**The CI Conventional Commits lint cannot prevent anything.**~~
+    **Closed 2026-08-02** by removing it from `pr-checks.yml` in all five
+    repositories. The `commit-msg` hook in `.pre-commit-config.yaml` remains the
+    enforcement layer — it runs as each commit is written, which is earlier,
+    cheaper, and actually preventive. Two fixes were built on top of the CI copy
+    (`--no-merges`, then pinning that flag across four repositories) before
+    anyone asked whether it could prevent anything at all; that is the more
+    useful lesson than the removal itself. The original finding follows.
+
+    It ran only on pull requests into `staging`/`main`, and on a
+    `develop -> staging` pull
     request **every commit in range is already merged into `develop`**. So it can
     only report history that is unfixable without rewriting a protected branch.
     The one place it could act — a work branch into `develop` — is exactly where
