@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.20.0"
+version: "1.21.0"
 created: 2026-08-01
 updated: 2026-08-02
 language: en
@@ -200,8 +200,27 @@ promote once; tag in the same breath.
    than to each developer's local configuration — see
    [`docs/org-governance-adoption.md`](docs/org-governance-adoption.md).
 
-8. **The scaffolded `CLAUDE.md` no longer carries stale policy, but the
-   mechanism that let it can recur.** `git-governance` shipped seven commits
+8. ~~**The scaffolded `CLAUDE.md` no longer carries stale policy, but the
+   mechanism that let it can recur.**~~ **Closed 2026-08-02.** Every repository
+   consumed by tag now calls `release-integrity.yml`: `git-governance`,
+   `docs-governance`, and `platform-workflows` — the three that publish a
+   floating `v1`, each on its own offset schedule. That is the closure criterion,
+   stated here because the entry previously said "every repository" and left the
+   remaining two ambiguous.
+
+   **`.github` and `ai-assisted-sdd-template` are out of scope, not outstanding.**
+   Both are consumed from the default branch — organization defaults apply from
+   `main`, and *Use this template* copies the default branch — so there is no tag
+   through which a consumer could receive a stale version, which is the only
+   failure this check detects. `.github` carries no tags at all;
+   `ai-assisted-sdd-template`'s `v1.0.0`/`v1.1.0` are inert markers with no
+   floating `v1`, and `main` is 30 commits past `v1.1.0` with nobody affected.
+   Pointing the check at either would fail on *"floating tag 'v1' does not
+   exist"* on its first run — a false positive, and the fastest way to train
+   everyone to ignore a check that is correct everywhere else. The original
+   finding follows.
+
+   `git-governance` shipped seven commits
    past its `v1.1.0` tag without a version bump, and because
    `init-governance.sh` copies from the installed plugin cache rather than
    from the repository, two repositories inherited a `CLAUDE.md` asserting
@@ -233,10 +252,10 @@ promote once; tag in the same breath.
    scheduled rather than push-triggered because tagging happens *after* the
    merge, so a push-triggered run would fail every release by construction.
 
-   **This entry stays open until every repository actually calls it.** Shipping
-   the check is not the same as running it, and this register has already
-   confused the two once — see item 16, where the compliance check lived in the
-   least compliant repository.
+   **The entry stayed open until every repository in scope actually called it**,
+   which is what the closure above records. Shipping the check is not the same as
+   running it, and this register has already confused the two once — see item 16,
+   where the compliance check lived in the least compliant repository.
 
    Its first real run proves the point: it found `platform-workflows` itself
    drifted, with `v1` still at `v1.0.1` while `main` had moved several commits
