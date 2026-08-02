@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.18.0"
+version: "1.19.0"
 created: 2026-08-01
 updated: 2026-08-02
 language: en
@@ -95,13 +95,13 @@ product's name to be actionable.
 
 Rule 6 is the blueprint's wording and is deliberately a "should" — portability
 is a goal to be measured, not a gate that blocks a release. Verified state as
-of 2026-08-01:
+of 2026-08-02:
 
 | Repository | Portable standalone? | Notes |
 | --- | --- | --- |
 | `git-governance` | Yes, with one caveat | The `pr-checks.yml` it scaffolds hardcodes `licorsy/docs-governance/action@v1`, but the step is gated so it stays inert without a local `.docgov.config.js`. A fork that also uses docs-governance would run Licorsy's action until it repoints that line |
 | `docs-governance` | Yes | Engine is config-driven; all scoping comes from the consuming repository's `.docgov.config.js` |
-| `ai-assisted-sdd-template` | Content yes, CI depends on Licorsy | See known gaps below |
+| `ai-assisted-sdd-template` | Yes, with the CI opted out | Content is portable. The `ci-docs`/`ci-security` jobs call Licorsy's reusable workflows, but both are guarded by `if: github.repository_owner == 'licorsy'`, so a project created from the template outside this org gets no documentation or security automation until it repoints those `uses:` lines or drops the guard — an explicit choice rather than a silent dependency (gap 1, closed) |
 | `platform-workflows` | N/A | Organization-specific by design; it is the thing others point at |
 
 ## Known gaps
@@ -109,11 +109,11 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Item 1 is open; items 2, 14,
-and 17 are **accepted** — real states, deliberately not scheduled for change;
-items 3–13, 15, 16, 18, and 19 are closed — kept here with their resolution,
-because a gap that vanishes without a record gets rediscovered as a new finding
-by the next audit.
+Each entry names the repository that owns the fix. Items 2, 14, and 17 are
+**accepted** — real states, deliberately not scheduled for change; every other
+item is closed — kept here with its resolution, because a gap that vanishes
+without a record gets rediscovered as a new finding by the next audit. No gap
+is currently open.
 
 **On sequencing.** Gaps 9, 18, and 19 were closed as a single change per
 repository rather than one promotion each. That was a correction. Gap 8 had just
@@ -124,23 +124,28 @@ version bump, it forced an entire second release cycle to make
 version bump belongs *in* the change, not after it. Batch independent gaps;
 promote once; tag in the same breath.
 
-1. **`ai-assisted-sdd-template` CI depends on Licorsy's reusable workflows.**
-   Its `.github/workflows/pr-checks.yml` calls
-   `licorsy/platform-workflows/.github/workflows/ci-docs.yml@v1` and
-   `ci-security.yml@v1` as unguarded jobs. A repository created from the
-   template outside this organization inherits a dependency on workflow
-   definitions Licorsy controls and could change or delete.
+1. ~~**`ai-assisted-sdd-template` CI depends on Licorsy's reusable workflows.**~~
+   **Closed 2026-08-02** (`licorsy/ai-assisted-sdd-template#19`). Its `ci-docs`
+   and `ci-security` jobs now carry `if: github.repository_owner == 'licorsy'`,
+   so the dependency is explicit rather than silent: outside this organization
+   both skip, and the adopter chooses whether to repoint the `uses:` lines at
+   their own copies or consume Licorsy's knowingly.
 
-   Two corrections to how this was first recorded, both from reading the file
-   rather than inferring from the `uses:` line. It does **not** run CI against
-   Licorsy's repositories — a public reusable workflow executes in the
-   *caller's* context, on the caller's runners. And the fix cannot be copied
-   from `git-governance`: that guard uses `hashFiles()`, which is valid in a
-   step-level `if:` but not in the job-level `if:` a reusable-workflow call
-   requires. The template's own comment records that as tested, not assumed.
-   A job-level `github.repository_owner` condition would work; whether a
-   template *should* ship CI that self-disables for its adopters is a design
-   question, not a defect to quietly patch.
+   Two things this entry originally got wrong, both corrected by reading the
+   workflow instead of inferring from the `uses:` line. It does **not** run CI
+   against Licorsy's repositories — a public reusable workflow executes in the
+   *caller's* context, on the caller's runners — so the real exposure was a
+   dependency on definitions Licorsy could change or delete. And the prescribed
+   fix was impossible: `git-governance`'s guard uses `hashFiles()`, which is
+   valid in a step-level `if:` but not in the job-level `if:` a
+   reusable-workflow call requires.
+
+   The fix also falsified a claim the template was making.
+   `documentation-metadata-standard.md` Section 9 promised its docs automation
+   ran "on every push and pull request", which a guarded job does not deliver;
+   Section 9 (v1.26) now states that none of it runs outside `licorsy`. **A
+   guard that silences a check is only half the change — the document
+   describing that check has to stop over-promising in the same edit.**
 
 2. **Overlap between the template's doc-consistency reviewer and
    `docs-governance`'s.** Both audit a document set for semantic drift with the
