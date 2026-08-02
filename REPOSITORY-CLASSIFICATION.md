@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.19.0"
+version: "1.20.0"
 created: 2026-08-01
 updated: 2026-08-02
 language: en
@@ -109,11 +109,10 @@ of 2026-08-02:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 2, 14, and 17 are
-**accepted** — real states, deliberately not scheduled for change; every other
-item is closed — kept here with its resolution, because a gap that vanishes
-without a record gets rediscovered as a new finding by the next audit. No gap
-is currently open.
+Each entry names the repository that owns the fix. Item 20 is **open**; items 2,
+14, and 17 are **accepted** — real states, deliberately not scheduled for change;
+every other item is closed — kept here with its resolution, because a gap that
+vanishes without a record gets rediscovered as a new finding by the next audit.
 
 **On sequencing.** Gaps 9, 18, and 19 were closed as a single change per
 repository rather than one promotion each. That was a correction. Gap 8 had just
@@ -525,6 +524,28 @@ promote once; tag in the same breath.
     separately load-bearing either way: without it the check fails by
     construction on every promotion, because GitHub writes the merge subjects
     itself.
+
+20. **Five of `ai-assisted-sdd-template`'s workflows report under one check
+    name.** `adapter-rules-check.yml`, `adapter-sync-check.yml`,
+    `scope-consistency-check.yml`, `state-staleness-check.yml`, and
+    `step-reference-check.yml` each name their only job `check`, and GitHub
+    derives a check's context from the job's `name:` (falling back to the job
+    id). All five therefore appear as a single `check` context, indistinguishable
+    from one another.
+
+    The consequence is concrete rather than cosmetic: when required status checks
+    were applied on 2026-08-02, these five had to be **left out** of
+    `protect-staging` and `protect-main`, because requiring `check` cannot express
+    *which* of them must pass. They run and they report — nothing is silently
+    skipped — but they cannot be made blocking while they share a name.
+
+    The fix is a rename to distinct job names, then adding the new contexts to
+    both rulesets. Sequence matters: a required context that has never been
+    reported blocks every pull request on *"Expected — waiting for status to be
+    reported"*, so the rename must merge and run at least once **before** the
+    ruleset is updated, never in the same step.
+
+    Deferred deliberately on 2026-08-02, not overlooked.
 
 ## Canonical source
 
