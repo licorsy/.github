@@ -3,9 +3,9 @@ title: "AGENTS.md"
 doc_type: instruction
 description: "Canonical agent instructions for this repository and the source of truth CLAUDE.md points at: the branch flow, Conventional Commits requirement, the merge-method and branch-lifecycle policy enforced server-side, the autonomous-to-develop and human-gated-to-staging/main permission model, and the local and remote validation layers."
 status: active
-version: "1.1.0"
+version: "1.2.0"
 created: 2026-08-01
-updated: 2026-08-01
+updated: 2026-08-02
 language: en
 id: agents-instructions
 owner: Alexandre Clemente
@@ -146,6 +146,26 @@ merges into `develop` happen automatically and often — running Actions there
 too would burn quota on checks that already passed locally. `staging` and `main`
 are the deliberate, infrequent promotion points, so that's where spending
 Actions minutes on one more remote confirmation is worth it.
+
+Four independent jobs run there: file-content hooks, documentation consistency,
+the promotion-source guard, and security. They are **separate jobs on purpose**
+— steps stop at the first failure, so a check bundled as a trailing step can be
+silently skipped by an unrelated failure ahead of it. That happened: a
+commit-message failure suppressed the documentation check entirely on a real
+promotion, which looked merely "red on commit messages."
+
+The **promotion-source guard** is what makes the branch flow enforceable rather
+than conventional. Rulesets require a pull request but constrain nothing about
+where it comes *from*, so a work branch could target `staging` or `main`
+directly. The guard rejects any pull request into `staging` not from `develop`,
+and into `main` not from `staging`. `hotfix/` is not an exception — see the
+taxonomy in `agents/git-governance-advisor.md`.
+
+There is deliberately **no remote Conventional Commits lint**. On a promotion
+pull request every commit in range is already merged into `develop`, so such a
+check can only report history that cannot be corrected without rewriting a
+protected branch. The `commit-msg` hook gates every commit as it is written,
+which is earlier, cheaper, and actually preventive.
 
 ## Companion plugins
 
