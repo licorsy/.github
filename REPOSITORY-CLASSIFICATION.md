@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.16.0"
+version: "1.17.0"
 created: 2026-08-01
 updated: 2026-08-01
 language: en
@@ -109,8 +109,8 @@ of 2026-08-01:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 1, 8, 9, 14, and 18
-are open; items 2 and 17 are **accepted** — real overlaps, deliberately not
+Each entry names the repository that owns the fix. Items 1, 8, 9, 14, 18, and
+19 are open; items 2 and 17 are **accepted** — real overlaps, deliberately not
 scheduled for removal; items 3, 4, 5, 6, 7, 10, 11, 12, 13, 15, and 16 are
 closed — kept here with their resolution, because a gap that vanishes without a
 record gets rediscovered as a new finding by the next audit.
@@ -443,6 +443,45 @@ record gets rediscovered as a new finding by the next audit.
     the expected upstream branch. That belongs in `platform-workflows` alongside
     `release-integrity.yml`, which exists for the same shape of problem —
     a policy stated in prose with nothing verifying it.
+
+19. **The CI Conventional Commits lint cannot prevent anything.** It runs only
+    on pull requests into `staging`/`main`, and on a `develop -> staging` pull
+    request **every commit in range is already merged into `develop`**. So it can
+    only report history that is unfixable without rewriting a protected branch.
+    The one place it could act — a work branch into `develop` — is exactly where
+    `pr-checks.yml` deliberately does not run, to save Actions quota. The local
+    `commit-msg` hook already gates every new commit as it is written.
+
+    Found on 2026-08-01 when both promotion pull requests failed on it, for two
+    different reasons that between them rule out the obvious narrow fixes:
+
+    - `.github`: a commit made straight onto `main`, outside the promotion flow,
+      so the local hook never saw it. Already on `main` — an exclusion for
+      published history (`--not origin/main`) would cover this one.
+    - `ai-assisted-sdd-template`: a squash merge where GitHub used the *branch
+      name* as the subject. On `develop`, not `main`, so that exclusion does not
+      reach it.
+
+    **Both promotions were merged with the check red, as a recorded exception
+    rather than an oversight.** The findings are accurate and name real
+    non-conforming commits; neither can be corrected without a force-push to a
+    protected branch, which this repository's own policy forbids. Merging was
+    judged better than either rewriting history or leaving the branch flow
+    permanently unpromotable.
+
+    What makes this a gap rather than a nuisance: two separate fixes were built
+    on top of this check earlier the same day — adding `--no-merges`, then
+    pinning that flag with a `facts` entry across four repositories — before
+    anyone noticed the check is structurally inert. Effort went into making a
+    gate correct that cannot gate.
+
+    **Do not extend it further before deciding what it is for.** The options are
+    to drop it and rely on the local hook, or to run it on `develop` pull
+    requests where it could prevent something, at the cost of quota and of
+    contradicting the rationale written into `AGENTS.md`. `--no-merges` is
+    separately load-bearing either way: without it the check fails by
+    construction on every promotion, because GitHub writes the merge subjects
+    itself.
 
 ## Canonical source
 
