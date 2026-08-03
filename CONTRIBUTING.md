@@ -3,9 +3,9 @@ title: "Contributing"
 doc_type: governance
 description: "Org-wide contribution conventions inherited by every licorsy repository without its own CONTRIBUTING.md: the Change-as-prompt principle and its two compliance paths, prompt lifecycle, file naming, documentation metadata, local validation, and pull request expectations."
 status: active
-version: "1.1.0"
+version: "1.2.0"
 created: 2026-07-31
-updated: 2026-08-01
+updated: 2026-08-03
 language: en
 id: contributing
 owner: Alexandre Clemente
@@ -96,11 +96,16 @@ prompt except the blank scaffold; update it alongside any status change.
   hygiene (trailing whitespace, EOF, YAML/JSON syntax, merge markers) and Conventional
   Commits on the commit subject.
 - **Commit messages**: Conventional Commits (`feat`, `fix`, `docs`, `refactor`,
-  `chore`, `test`, `perf`, `build`, `ci`) is the expected format everywhere. Where
-  `.pre-commit-config.yaml` exists it's enforced by the `commit-msg` hook; where
-  `.github/workflows/pr-checks.yml` exists it's re-checked on `staging`/`main` PRs.
-- **Branch model**: branch names and promotion rules (`develop` → `staging` → `main`)
-  are defined by the `git-governance` plugin, not here.
+  `chore`, `test`, `perf`, `build`, `ci`) is the expected format everywhere,
+  enforced by the `commit-msg` hook wherever `.pre-commit-config.yaml` exists.
+  That hook is the only gate: there is deliberately **no** remote re-check on
+  `staging`/`main` pull requests, for the reason given in `AGENTS.md` under
+  "Remote validation layer".
+- **Branch model**: branch names, the promotion path (`develop` → `staging` →
+  `main`) and the merge permissions along it are defined by the `git-governance`
+  plugin, not here. How *often* that path is walked is a separate question and a
+  Licorsy-specific one — the promotion cadence is org policy, in `AGENTS.md`
+  under "Promotion cadence".
 
 ## Pull requests
 
