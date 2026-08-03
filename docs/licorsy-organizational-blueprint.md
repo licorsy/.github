@@ -4,9 +4,9 @@ subtitle: "Operating Model, Engineering Standards, and Platform Architecture"
 doc_type: governance
 description: "Canonical operating model for Licorsy — organizational principles, repository architecture and ownership boundaries, architecture and engineering standards, security and reliability baseline, tooling strategy, maturity model, and governance cadence."
 status: active
-version: "1.2.0"
+version: "1.3.0"
 created: 2026-08-01
-updated: 2026-08-01
+updated: 2026-08-03
 language: en
 id: organizational-blueprint
 owner: Alexandre Clemente
@@ -19,6 +19,9 @@ related: [architecture-principles, engineering-standards, repository-classificat
 
 Changelog:
 
+- v1.3.0: Section 14 distinguishes the *review* cadence it defines from the
+  *delivery* cadence introduced in `AGENTS.md`, so the two uses of the word do
+  not read as one policy stated twice.
 - v1.2.0: Sections 4.4, 11, and 13 no longer name the private product
   repositories individually. This repository is public and they are not; naming
   them published the organization's private project list for no governance
@@ -31,7 +34,6 @@ Changelog:
   corrected to `state/resources.md`, the file that actually exists.
   **The body is no longer verbatim intake text** — v1.0.0 in `git log` is the
   archived original.
-- v1.0.0: Intake, body verbatim from the source blueprint.
 
 ---
 
@@ -573,6 +575,11 @@ Characteristics:
 - measure lead time, deployment frequency, and incident learnings
 
 ## 14. Governance cadence
+
+This section defines the **review** cadence — how often the organization looks at
+itself. The **delivery** cadence, how often work is promoted from `develop` to
+`main`, is a different policy and is owned by `AGENTS.md` under "Promotion
+cadence", not restated here.
 
 ### Weekly
 - execution review

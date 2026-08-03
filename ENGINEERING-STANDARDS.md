@@ -3,9 +3,9 @@ title: "Engineering Standards"
 doc_type: governance
 description: "Organization-wide engineering standards: the Lean + Spec-Driven Development delivery flow, the branch promotion model, the required quality gates at each promotion step, the standard document set every repository carries, the tooling strategy, and an addendum of tooling candidates that are explicitly not yet policy."
 status: active
-version: "1.0.0"
+version: "1.1.0"
 created: 2026-08-01
-updated: 2026-08-01
+updated: 2026-08-03
 language: en
 id: engineering-standards
 owner: Alexandre Clemente
@@ -51,6 +51,10 @@ pre-production validation, and `main` is the production release branch.
 conventions are owned by [git-governance](https://github.com/licorsy/git-governance)
 and are deliberately not restated here.** Duplicating them is the exact failure
 mode the blueprint's Section 5.1 ownership matrix exists to prevent.
+
+How often that promotion path is walked is not a `git-governance` question — it
+is Licorsy-specific and therefore org policy. See `AGENTS.md` in this repository
+under "Promotion cadence", also not restated here.
 
 ## Required gates
 
