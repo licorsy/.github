@@ -1,11 +1,11 @@
 ---
 title: "AGENTS.md"
 doc_type: instruction
-description: "Canonical agent instructions for this repository and the source of truth CLAUDE.md points at: the branch flow, Conventional Commits requirement, the merge-method and branch-lifecycle policy enforced server-side, the autonomous-to-develop and human-gated-to-staging/main permission model, and the local and remote validation layers."
+description: "Canonical agent instructions for this repository and the source of truth CLAUDE.md points at: the branch flow, Conventional Commits requirement, the merge-method and branch-lifecycle policy enforced server-side, the autonomous-to-develop and human-gated-to-staging/main permission model, the daily promotion-window cadence and what one confirmation authorizes, and the local and remote validation layers."
 status: active
-version: "1.2.0"
+version: "1.3.0"
 created: 2026-08-01
-updated: 2026-08-02
+updated: 2026-08-03
 language: en
 id: agents-instructions
 owner: Alexandre Clemente
@@ -63,10 +63,10 @@ feat/* (also fix/, refactor/, docs/, chore/, hotfix/)  ->  develop  ->  staging 
   what makes `develop` safe to automate is that errors there are cheap to
   revert, not a lighter review requirement.
 - Merging into `staging` or `main` always requires **explicit human confirmation
-  before the PR is even opened**, and the merge itself is a human action, not
-  an automated one — even when the request comes from the repo owner using
-  their own credentials. See the permission model in `git-governance`'s
-  `agents/git-governance-advisor.md`.
+  before the PR is even opened** — even when the request comes from the repo
+  owner using their own credentials. What that confirmation authorizes is one
+  **promotion window**, not one merge: see "Promotion cadence" below. See the
+  permission model in `git-governance`'s `agents/git-governance-advisor.md`.
 
 ### Why the `staging`/`main` gate is behavioral, not server-side
 
@@ -120,6 +120,80 @@ it offers nothing this model needs and rewrites committer metadata on the way in
   request — without that protection, promoting would delete the integration
   branch.
 
+## Promotion cadence
+
+Promotions are batched into **one promotion window per repository per working
+day**, run when the day's work is done — not one promotion per change. A day
+with nothing worth promoting promotes nothing: the target is a ceiling on
+ceremony, not a quota to fill.
+
+**What batches is the promotion, not the work.** Commit atomicity is unchanged
+(see "Commit policy"), and work branches keep merging into `develop` one pull
+request each, as often as they land — that path is autonomous and spends no
+remote checks at all (see "Remote validation layer"), so batching it would save
+nothing. The window exists because the expensive part of a promotion is not
+machine time; it is the human decision each one spends.
+
+### What one confirmation authorizes
+
+One confirmation opens a window for **one repository** and covers **both hops**:
+`develop -> staging` and `staging -> main`. Inside an open window, the agent may
+open and merge both promotion pull requests, each only once its required checks
+are green, stopping at the first red. Outside a window it may do neither.
+
+This changes who clicks merge, and that is stated rather than elided: before,
+each merge into a promotion branch was itself a human action; now the human
+action is opening the window. What justifies the change is that the second hop
+introduces nothing the first was not approved for — `staging -> main` promotes
+exactly the range the confirmation named — so a second prompt asks the same
+question about the same commits. The gate is otherwise untouched: no promotion
+pull request is opened without a confirmation, the approval count stays at zero
+for the reason given under "Merge policy", and why this gate is behavioral
+rather than server-side is unchanged (see "Why the `staging`/`main` gate is
+behavioral, not server-side").
+
+### Off-cadence: `hotfix`, and the exception cadence cannot batch
+
+- A `hotfix/` branch is a **cadence exemption only**. It opens a window when it
+  is ready instead of waiting for the end of the day. Its path is unchanged —
+  `develop -> staging -> main`, with the promotion-source guard rejecting
+  anything else. The guard is never what gets relaxed; see "Remote validation
+  layer".
+- A change that introduces a **new required status check** cannot travel in the
+  same window as the ruleset update that requires it. The check must merge and
+  report at least once in an earlier window, or every subsequent pull request
+  blocks on *"Expected — waiting for status to be reported"*. Two windows,
+  deliberately.
+
+### Bump in the same breath
+
+Anything promoted to `main` moves `main`, so whatever records the version moves
+with it — in the promoted change, not in a follow-up:
+
+- In the three tag-consumed repositories (`git-governance`, `docs-governance`,
+  `platform-workflows`) that means cutting the tag with the promotion. `main`
+  moving without one is exactly the drift `release-integrity` detects.
+- **This repository is not one of them**: it carries no tags and is consumed
+  from its default branch, so here the clause is the per-document `version:`
+  bump that `docs-governance`'s `version-bump` rule already enforces on
+  promotion pull requests.
+
+The batching half of this rule was learned the expensive way; the case that
+taught it is recorded in
+[REPOSITORY-CLASSIFICATION.md](REPOSITORY-CLASSIFICATION.md) under "Known gaps".
+
+### Stacked pull requests: evaluated 2026-08-03, not adopted
+
+GitHub's native stacked pull requests split one change into an ordered chain of
+dependent pull requests. They are not adopted here. They raise the number of
+pull requests rather than lowering it, and GitHub's own documentation states
+that CI runs once for each pull request in a stack — both the wrong direction
+for a policy whose purpose is fewer promotion cycles. What they relieve is a
+review bottleneck on a team; this organization has a solo maintainer and
+`required_approving_review_count: 0`, so there is no review queue for them to
+relieve. Recorded here so the question stays answered instead of being
+rediscovered.
+
 ## Local validation layer (primary)
 
 `pre-commit` is the main gate, not GitHub Actions. Install once per clone:
@@ -146,6 +220,14 @@ merges into `develop` happen automatically and often — running Actions there
 too would burn quota on checks that already passed locally. `staging` and `main`
 are the deliberate, infrequent promotion points, so that's where spending
 Actions minutes on one more remote confirmation is worth it.
+
+The quota argument is currently theoretical here and the restriction is kept
+anyway. Licorsy's repositories are public, so Actions minutes are unmetered —
+measured 2026-08-03, every run in the organization reports zero billable
+milliseconds. What the restriction still buys is signal: a red check means a
+promotion is in trouble, which is only true while checks do not also fire on
+the branch that merges dozens of times a day. It also keeps the policy portable
+to a private repository, where the quota argument becomes literal.
 
 Four independent jobs run there: file-content hooks, documentation consistency,
 the promotion-source guard, and security. They are **separate jobs on purpose**
