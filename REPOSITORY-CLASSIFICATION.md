@@ -3,9 +3,9 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.19.0"
+version: "1.23.0"
 created: 2026-08-01
-updated: 2026-08-02
+updated: 2026-08-03
 language: en
 id: repository-classification
 owner: Alexandre Clemente
@@ -109,20 +109,20 @@ of 2026-08-02:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 2, 14, and 17 are
-**accepted** — real states, deliberately not scheduled for change; every other
-item is closed — kept here with its resolution, because a gap that vanishes
-without a record gets rediscovered as a new finding by the next audit. No gap
-is currently open.
+Each entry names the repository that owns the fix. Items 20 and 21 are
+**open** — 20 only in its second half, the ruleset update; items 2, 14, 17, and
+22 are **accepted** — real states, deliberately not scheduled for change;
+every other item is closed — kept here with its resolution, because a gap that
+vanishes without a record gets rediscovered as a new finding by the next audit.
 
 **On sequencing.** Gaps 9, 18, and 19 were closed as a single change per
 repository rather than one promotion each. That was a correction. Gap 8 had just
 been closed on its own, and because landing it moved `main` without carrying a
 version bump, it forced an entire second release cycle to make
-`release-integrity` green again. Anything that lands on `main` moves `main`, and
-`main` moving without a tag is exactly the drift that check detects — so the
-version bump belongs *in* the change, not after it. Batch independent gaps;
-promote once; tag in the same breath.
+`release-integrity` green again. That case is what taught the rule; the rule
+itself is no longer stated here. It is a standing policy, not a property of this
+register, and it lives in [AGENTS.md](AGENTS.md) under "Promotion cadence" —
+batch, promote once per window, bump in the same breath.
 
 1. ~~**`ai-assisted-sdd-template` CI depends on Licorsy's reusable workflows.**~~
    **Closed 2026-08-02** (`licorsy/ai-assisted-sdd-template#19`). Its `ci-docs`
@@ -201,8 +201,27 @@ promote once; tag in the same breath.
    than to each developer's local configuration — see
    [`docs/org-governance-adoption.md`](docs/org-governance-adoption.md).
 
-8. **The scaffolded `CLAUDE.md` no longer carries stale policy, but the
-   mechanism that let it can recur.** `git-governance` shipped seven commits
+8. ~~**The scaffolded `CLAUDE.md` no longer carries stale policy, but the
+   mechanism that let it can recur.**~~ **Closed 2026-08-02.** Every repository
+   consumed by tag now calls `release-integrity.yml`: `git-governance`,
+   `docs-governance`, and `platform-workflows` — the three that publish a
+   floating `v1`, each on its own offset schedule. That is the closure criterion,
+   stated here because the entry previously said "every repository" and left the
+   remaining two ambiguous.
+
+   **`.github` and `ai-assisted-sdd-template` are out of scope, not outstanding.**
+   Both are consumed from the default branch — organization defaults apply from
+   `main`, and *Use this template* copies the default branch — so there is no tag
+   through which a consumer could receive a stale version, which is the only
+   failure this check detects. `.github` carries no tags at all;
+   `ai-assisted-sdd-template`'s `v1.0.0`/`v1.1.0` are inert markers with no
+   floating `v1`, and `main` is 30 commits past `v1.1.0` with nobody affected.
+   Pointing the check at either would fail on *"floating tag 'v1' does not
+   exist"* on its first run — a false positive, and the fastest way to train
+   everyone to ignore a check that is correct everywhere else. The original
+   finding follows.
+
+   `git-governance` shipped seven commits
    past its `v1.1.0` tag without a version bump, and because
    `init-governance.sh` copies from the installed plugin cache rather than
    from the repository, two repositories inherited a `CLAUDE.md` asserting
@@ -234,10 +253,10 @@ promote once; tag in the same breath.
    scheduled rather than push-triggered because tagging happens *after* the
    merge, so a push-triggered run would fail every release by construction.
 
-   **This entry stays open until every repository actually calls it.** Shipping
-   the check is not the same as running it, and this register has already
-   confused the two once — see item 16, where the compliance check lived in the
-   least compliant repository.
+   **The entry stayed open until every repository in scope actually called it**,
+   which is what the closure above records. Shipping the check is not the same as
+   running it, and this register has already confused the two once — see item 16,
+   where the compliance check lived in the least compliant repository.
 
    Its first real run proves the point: it found `platform-workflows` itself
    drifted, with `v1` still at `v1.0.1` while `main` had moved several commits
@@ -525,6 +544,82 @@ promote once; tag in the same breath.
     separately load-bearing either way: without it the check fails by
     construction on every promotion, because GitHub writes the merge subjects
     itself.
+
+20. **Five of `ai-assisted-sdd-template`'s workflows report under one check
+    name.** `adapter-rules-check.yml`, `adapter-sync-check.yml`,
+    `scope-consistency-check.yml`, `state-staleness-check.yml`, and
+    `step-reference-check.yml` each name their only job `check`, and GitHub
+    derives a check's context from the job's `name:` (falling back to the job
+    id). All five therefore appear as a single `check` context, indistinguishable
+    from one another.
+
+    The consequence is concrete rather than cosmetic: when required status checks
+    were applied on 2026-08-02, these five had to be **left out** of
+    `protect-staging` and `protect-main`, because requiring `check` cannot express
+    *which* of them must pass. They run and they report — nothing is silently
+    skipped — but they cannot be made blocking while they share a name.
+
+    The fix is a rename to distinct job names, then adding the new contexts to
+    both rulesets. Sequence matters: a required context that has never been
+    reported blocks every pull request on *"Expected — waiting for status to be
+    reported"*, so the rename must merge and run at least once **before** the
+    ruleset is updated, never in the same step.
+
+    Deferred deliberately on 2026-08-02, not overlooked. **Half closed
+    2026-08-03** (`licorsy/ai-assisted-sdd-template#24`): the five job ids are
+    now `adapter-rules`, `adapter-sync`, `scope-consistency`, `state-staleness`
+    and `step-reference`, and four of them were observed reporting under their
+    own context on that pull request. What remains is adding those contexts to
+    `protect-staging` and `protect-main`, which is a **separate promotion
+    window** by the rule above — it is not batched with the rename, on purpose.
+
+21. **`setup-branch-protection.sh` silently deletes the required status checks.**
+    The script builds one ruleset payload whose `rules` array is exactly
+    `deletion`, `non_fast_forward`, and `pull_request`, then `PUT`s it over the
+    existing ruleset when one is found. Rulesets are replaced wholesale, not
+    merged, so the required status checks applied out of band on 2026-08-02 are
+    not in that payload and do not survive a re-run — on any repository, for all
+    three branches, with no warning.
+
+    Nothing has hit this yet because the script has not been re-run since the
+    checks were applied. It gets more likely, not less, from here: a daily
+    promotion window means the governance scripts are exercised more often, and
+    the failure is silent in the worst way — protection appears configured, the
+    ruleset exists, and the only missing part is the one that blocks a bad
+    promotion.
+
+    The fix belongs to `git-governance`: either read the existing ruleset and
+    preserve the `required_status_checks` rule, or make the script own that rule
+    outright so the two sources agree. Recorded here because this repository is
+    where the gap register lives; it is not this repository's to close.
+
+22. **The "Actions never runs on `develop`" invariant holds in three of five
+    repositories.** [AGENTS.md](AGENTS.md) states the design under "Remote
+    validation layer" and it is true here, in `git-governance` and in
+    `platform-workflows` — a pull request into `develop` triggers nothing in any
+    of the three. Two repositories diverge, and the two cases are not the same
+    finding:
+
+    - `docs-governance`'s `tests.yml` uses a bare `on: pull_request` with no
+      branch filter, so its unit tests run on every pull request into `develop`.
+      **Accepted, not a defect.** That workflow is the repository's only
+      automated test signal before a merge — its `.pre-commit-config.yaml` runs
+      file hygiene and Conventional Commits, nothing that executes the test
+      suite — and `develop` has no required status checks, so the run is
+      advisory and blocks nothing. Removing it would trade a real signal for a
+      consistency that costs nothing to break.
+    - `ai-assisted-sdd-template` lists `develop` in its `pr-checks.yml` branch
+      filter and carried six path-filtered workflows that additionally fired on
+      `push` to `main` and `develop`, re-running on the merge what the pull
+      request had already run. **The duplication is closed** (2026-08-03,
+      `licorsy/ai-assisted-sdd-template#24`): the `push:` triggers are gone,
+      with the reason left in the files as a comment, since a `push:` trigger
+      looks like an omission to whoever tidies the workflow next.
+      **The `pr-checks.yml` branch filter is accepted**, on the same reasoning
+      as `docs-governance` above — `ci-docs` and `ci-security` on a `develop`
+      pull request are a real signal rather than a second copy of one, and with
+      no required checks on `develop` they block nothing. What made the six
+      workflows a defect was that they duplicated a run, not that they ran.
 
 ## Canonical source
 
