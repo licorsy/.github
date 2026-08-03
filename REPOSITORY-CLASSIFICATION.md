@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.22.0"
+version: "1.23.0"
 created: 2026-08-01
 updated: 2026-08-03
 language: en
@@ -109,9 +109,9 @@ of 2026-08-02:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 20, 21, and 22 are
-**open**; items 2, 14, and 17 are **accepted** — real states, deliberately not
-scheduled for change;
+Each entry names the repository that owns the fix. Items 20 and 21 are
+**open** — 20 only in its second half, the ruleset update; items 2, 14, 17, and
+22 are **accepted** — real states, deliberately not scheduled for change;
 every other item is closed — kept here with its resolution, because a gap that
 vanishes without a record gets rediscovered as a new finding by the next audit.
 
@@ -565,7 +565,13 @@ batch, promote once per window, bump in the same breath.
     reported"*, so the rename must merge and run at least once **before** the
     ruleset is updated, never in the same step.
 
-    Deferred deliberately on 2026-08-02, not overlooked.
+    Deferred deliberately on 2026-08-02, not overlooked. **Half closed
+    2026-08-03** (`licorsy/ai-assisted-sdd-template#24`): the five job ids are
+    now `adapter-rules`, `adapter-sync`, `scope-consistency`, `state-staleness`
+    and `step-reference`, and four of them were observed reporting under their
+    own context on that pull request. What remains is adding those contexts to
+    `protect-staging` and `protect-main`, which is a **separate promotion
+    window** by the rule above — it is not batched with the rename, on purpose.
 
 21. **`setup-branch-protection.sh` silently deletes the required status checks.**
     The script builds one ruleset payload whose `rules` array is exactly
@@ -603,10 +609,17 @@ batch, promote once per window, bump in the same breath.
       advisory and blocks nothing. Removing it would trade a real signal for a
       consistency that costs nothing to break.
     - `ai-assisted-sdd-template` lists `develop` in its `pr-checks.yml` branch
-      filter and carries six path-filtered workflows that additionally fire on
+      filter and carried six path-filtered workflows that additionally fired on
       `push` to `main` and `develop`, re-running on the merge what the pull
-      request already ran. **Open**, and scheduled with the same batch as item
-      20 — that repository is where both fixes land.
+      request had already run. **The duplication is closed** (2026-08-03,
+      `licorsy/ai-assisted-sdd-template#24`): the `push:` triggers are gone,
+      with the reason left in the files as a comment, since a `push:` trigger
+      looks like an omission to whoever tidies the workflow next.
+      **The `pr-checks.yml` branch filter is accepted**, on the same reasoning
+      as `docs-governance` above — `ci-docs` and `ci-security` on a `develop`
+      pull request are a real signal rather than a second copy of one, and with
+      no required checks on `develop` they block nothing. What made the six
+      workflows a defect was that they duplicated a run, not that they ran.
 
 ## Canonical source
 
