@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.23.0"
+version: "1.24.0"
 created: 2026-08-01
 updated: 2026-08-03
 language: en
@@ -110,8 +110,8 @@ Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
 Each entry names the repository that owns the fix. Items 20 and 21 are
-**open** — 20 only in its second half, the ruleset update; items 2, 14, 17, and
-22 are **accepted** — real states, deliberately not scheduled for change;
+**open** — 20 only in its second half, the ruleset update; items 2, 14, 17, 22,
+and 23 are **accepted** — real states, deliberately not scheduled for change;
 every other item is closed — kept here with its resolution, because a gap that
 vanishes without a record gets rediscovered as a new finding by the next audit.
 
@@ -620,6 +620,38 @@ batch, promote once per window, bump in the same breath.
       pull request are a real signal rather than a second copy of one, and with
       no required checks on `develop` they block nothing. What made the six
       workflows a defect was that they duplicated a run, not that they ran.
+
+23. **Three repositories carry permanent squash-era commits on `staging` and
+    `main`.** Measured 2026-08-03, counting non-merge commits present on a
+    promotion branch and absent from its source:
+
+    | Repository | unique to `staging` | unique to `main` |
+    | --- | --- | --- |
+    | `.github` | 0 | 0 |
+    | `docs-governance` | 0 | 0 |
+    | `git-governance` | 1 | 1 |
+    | `platform-workflows` | 2 | 2 |
+    | `ai-assisted-sdd-template` | 2 | 2 |
+
+    All of them date from the `hom -> staging` rename of 2026-07-31 and the
+    first reusable-workflow imports, when promotions were still squashed —
+    before the ruleset restricted `staging` and `main` to merge commits. The
+    doubled pull-request suffixes in their subjects (`... (#2) (#3)`) are the
+    signature of a squash of a squash.
+
+    **Accepted, and permanent.** A squashed promotion delivers content as a new
+    commit rather than as shared history, so the copy on `staging`/`main` has no
+    counterpart on `develop` and no later promotion can clear it. Nothing is
+    missing — the content reached every branch — and the merge-only ruleset
+    stops any new instance from appearing. Rewriting the three protected
+    branches to erase it would cost more than it is worth and is not proposed.
+
+    Recorded because it is not inert: it makes a promotion-time drift check
+    report a hit on three of five repositories forever. `git-governance`'s
+    `/promote-window` was written to **stop** on exactly this signal, which
+    would have refused to promote those three permanently; it now reports into
+    the confirmation checklist instead (`licorsy/git-governance#38`). Any future
+    check over this signal must make the same distinction.
 
 ## Canonical source
 
