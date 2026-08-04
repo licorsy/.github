@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.26.0"
+version: "1.27.0"
 created: 2026-08-01
 updated: 2026-08-04
 language: en
@@ -111,8 +111,8 @@ Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
 Each entry names the repository that owns the fix. Item 20 is **open**, and
 only in its second half — the ruleset update, which item 21's closure made safe
-to apply but which cannot be done as originally written, and now carries a
-decision rather than a task; items 2, 14, 17, 22,
+to apply but which cannot be done as originally written, and is now blocked
+behind one prerequisite change rather than a choice; items 2, 14, 17, 22,
 and 23 are **accepted** — real states, deliberately not scheduled for change;
 every other item is closed — kept here with its resolution, because a gap that
 vanishes without a record gets rediscovered as a new finding by the next audit.
@@ -575,34 +575,45 @@ batch, promote once per window, bump in the same breath.
     `protect-staging` and `protect-main`, which is a **separate promotion
     window** by the rule above — it is not batched with the rename, on purpose.
 
-    **The remaining half cannot be done as written.** Measured 2026-08-04 on
-    that repository's `develop`: all five workflows trigger on `pull_request`
-    with a `paths:` filter and no `branches:` filter. A workflow skipped by path
+    **The remaining half cannot be done as written.** A workflow skipped by path
     filtering does not report a `skipped` conclusion — it posts **nothing**, and
     GitHub holds the required context at *"Expected — waiting for status to be
-    reported"* until the pull request is closed. Requiring these five would
-    therefore block every promotion pull request that does not happen to touch
-    their paths. `scope-consistency` is the sharpest case: it fires only on
-    `.github/scripts/doc-scope.js`, `.github/scripts/check-scope-consistency.js`
-    and `.github/CODEOWNERS`, so almost every promotion would stall on it.
+    reported"* until the pull request is closed. Requiring a path-filtered
+    workflow would therefore block every promotion pull request that does not
+    happen to touch its paths. `scope-consistency` is the sharpest case: it
+    fires only on `.github/scripts/doc-scope.js`,
+    `.github/scripts/check-scope-consistency.js` and `.github/CODEOWNERS`, so
+    almost every promotion would stall on it.
 
     This is the same distinction the entry above already draws for a context
     that has never reported once, applied to one that stops reporting per pull
     request — the first is a one-time stall that clears when the check runs, the
     second recurs forever. **A required check and a `paths:` filter are mutually
-    exclusive; only one of them can be kept.** Two resolutions, and this
-    repository does not own the choice:
+    exclusive; only one of them can be kept.**
 
-    - **Drop the `paths:` filters and scope the five to
-      `branches: [staging, main]`.** They then always report on exactly the pull
-      requests where they are required, and never on a `develop` one — which is
-      the branch scope [AGENTS.md](AGENTS.md) already prescribes for a companion
-      workflow under "Companion plugins". Costs Actions minutes that are
-      unmetered on a public repository, and loses the advisory signal on
-      `develop` pull requests that gap 22 accepted.
-    - **Leave them advisory and close this gap as accepted.** They already run
-      and report; what they cannot be is blocking. Nothing is silently skipped
-      either way, which is what the original entry established.
+    **Three corrections, all found by executing this rather than reading it**,
+    and recorded because the register's job is to stop a wrong premise being
+    inherited. First, **six** workflows carry `paths:` filters, not five — this
+    entry's "five" counts the workflows that once shared an indistinguishable
+    `check` context, a different set and a different defect;
+    `governance-scripts-tests` carries a filter and was never part of the naming
+    collision. Second, **none of the six is required today**: both gates require
+    exactly five contexts, all of them `pr-checks.yml` jobs, and that workflow
+    is unfiltered and scoped `branches: [develop, staging, main]`, so it always
+    reports. "Leave them advisory" was therefore the status quo rather than a
+    resolution, and this entry should not have offered it as one. Third, the
+    other option offered here — scoping them to `branches: [staging, main]` —
+    is **declined**: it stops them running on the `develop` pull request, moving
+    detection from the point where a change is small and its author present to
+    the promotion gate, where a failure blocks a release and the fix has to land
+    back on `develop` and be re-promoted.
+
+    What is left is one action, not a decision: **drop the `paths:` filters and
+    change nothing else.** Tracked in `ai-assisted-sdd-template` as
+    `docs/prompts/012-always-report-governance-checks.md`; **not yet merged**,
+    so this entry stays open. The ruleset update remains a later window — a
+    context added before it reports hangs every pull request on the exact defect
+    being closed.
 
 21. ~~**`setup-branch-protection.sh` silently deletes the required status
     checks.**~~ **Closed 2026-08-04** (`licorsy/git-governance#41`). Each
