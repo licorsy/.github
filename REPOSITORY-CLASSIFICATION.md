@@ -3,9 +3,9 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.24.0"
+version: "1.25.0"
 created: 2026-08-01
-updated: 2026-08-03
+updated: 2026-08-04
 language: en
 id: repository-classification
 owner: Alexandre Clemente
@@ -109,8 +109,9 @@ of 2026-08-02:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 20 and 21 are
-**open** — 20 only in its second half, the ruleset update; items 2, 14, 17, 22,
+Each entry names the repository that owns the fix. Item 20 is **open**, and
+only in its second half — the ruleset update, which item 21's closure has now
+made safe to apply; items 2, 14, 17, 22,
 and 23 are **accepted** — real states, deliberately not scheduled for change;
 every other item is closed — kept here with its resolution, because a gap that
 vanishes without a record gets rediscovered as a new finding by the next audit.
@@ -573,7 +574,31 @@ batch, promote once per window, bump in the same breath.
     `protect-staging` and `protect-main`, which is a **separate promotion
     window** by the rule above — it is not batched with the rename, on purpose.
 
-21. **`setup-branch-protection.sh` silently deletes the required status checks.**
+21. ~~**`setup-branch-protection.sh` silently deletes the required status
+    checks.**~~ **Closed 2026-08-04** (`licorsy/git-governance#41`). Each
+    `protect-<branch>` ruleset is now read before it is written and its
+    `required_status_checks` rule carried forward verbatim, and the run reports
+    which branches it preserved rather than doing it silently.
+
+    The entry left the fix open between two options — preserve the existing
+    rule, or own it outright so the two sources agree. Surveying all five
+    repositories settled it: the contexts are per-repository and cannot be
+    derived. The docs check reports as `docs-governance` in four repositories
+    and `ci-docs / docgov` in `ai-assisted-sdd-template`; `docs-governance` adds
+    one context per matrix cell (`test (20)`, `test (24)`); `platform-workflows`
+    adds `governance-compliance / governance-compliance`. A required context
+    that is never reported blocks the branch permanently, so a script that
+    guessed one would be worse than one that sets none — **preserve, never
+    invent** is the contract, and the script's header owns it.
+
+    Two consequences worth keeping. The script correspondingly cannot *remove* a
+    required check either: it faithfully preserves whatever it finds, including
+    a stale context, so dropping one means editing the ruleset directly. And
+    **the fix is on `git-governance`'s `develop` only** — it reaches consumers
+    when `main` does, since the plugin cache resolves tags, the same dependency
+    recorded as items 8 and 12. Until that release, a re-run from an installed
+    copy still deletes the checks. The original finding follows.
+
     The script builds one ruleset payload whose `rules` array is exactly
     `deletion`, `non_fast_forward`, and `pull_request`, then `PUT`s it over the
     existing ruleset when one is found. Rulesets are replaced wholesale, not
