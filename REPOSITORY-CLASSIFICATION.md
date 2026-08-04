@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.25.1"
+version: "1.25.2"
 created: 2026-08-01
 updated: 2026-08-04
 language: en
@@ -602,11 +602,14 @@ batch, promote once per window, bump in the same breath.
 
     Two consequences worth keeping. The script correspondingly cannot *remove* a
     required check either: it faithfully preserves whatever it finds, including
-    a stale context, so dropping one means editing the ruleset directly. And
-    **the fix is on `git-governance`'s `develop` only** — it reaches consumers
-    when `main` does, since the plugin cache resolves tags, the same dependency
-    recorded as items 8 and 12. Until that release, a re-run from an installed
-    copy still deletes the checks. The original finding follows.
+    a stale context, so dropping one means editing the ruleset directly. And the
+    fix had to reach `main`, not just `develop`, to reach anyone — the plugin
+    cache resolves tags, the same dependency recorded as items 8 and 12, so
+    until a release moved the tag every installed copy still handed back the
+    destructive version. **Released the same day as `v1.6.1`**, in the promotion
+    that carried the fix rather than after it: `main`, the floating `v1`, and
+    `v1.6.1^{}` all verified equal at `fb81285` against the remote's peeled
+    refs. The original finding follows.
 
     The script builds one ruleset payload whose `rules` array is exactly
     `deletion`, `non_fast_forward`, and `pull_request`, then `PUT`s it over the
