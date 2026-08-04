@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.25.0"
+version: "1.25.1"
 created: 2026-08-01
 updated: 2026-08-04
 language: en
@@ -579,6 +579,15 @@ batch, promote once per window, bump in the same breath.
     `protect-<branch>` ruleset is now read before it is written and its
     `required_status_checks` rule carried forward verbatim, and the run reports
     which branches it preserved rather than doing it silently.
+
+    **Verified by an actual re-run**, not only by inspection — this register has
+    confused shipping a fix with running it before (see item 8). Re-running the
+    script against `.github` on 2026-08-04 left all three rulesets *byte for
+    byte identical* to a backup taken immediately before: all five contexts
+    still required on `protect-staging` and `protect-main`, none on
+    `protect-develop`, and `allowed_merge_methods` still `merge, squash` on
+    `develop` against `merge` on the other two. The header's long-standing
+    "idempotent — safe to re-run" claim is now true.
 
     The entry left the fix open between two options — preserve the existing
     rule, or own it outright so the two sources agree. Surveying all five
