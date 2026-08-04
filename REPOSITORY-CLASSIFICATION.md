@@ -3,9 +3,9 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.23.0"
+version: "1.26.0"
 created: 2026-08-01
-updated: 2026-08-03
+updated: 2026-08-04
 language: en
 id: repository-classification
 owner: Alexandre Clemente
@@ -109,9 +109,11 @@ of 2026-08-02:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 20 and 21 are
-**open** — 20 only in its second half, the ruleset update; items 2, 14, 17, and
-22 are **accepted** — real states, deliberately not scheduled for change;
+Each entry names the repository that owns the fix. Item 20 is **open**, and
+only in its second half — the ruleset update, which item 21's closure made safe
+to apply but which cannot be done as originally written, and now carries a
+decision rather than a task; items 2, 14, 17, 22,
+and 23 are **accepted** — real states, deliberately not scheduled for change;
 every other item is closed — kept here with its resolution, because a gap that
 vanishes without a record gets rediscovered as a new finding by the next audit.
 
@@ -573,7 +575,72 @@ batch, promote once per window, bump in the same breath.
     `protect-staging` and `protect-main`, which is a **separate promotion
     window** by the rule above — it is not batched with the rename, on purpose.
 
-21. **`setup-branch-protection.sh` silently deletes the required status checks.**
+    **The remaining half cannot be done as written.** Measured 2026-08-04 on
+    that repository's `develop`: all five workflows trigger on `pull_request`
+    with a `paths:` filter and no `branches:` filter. A workflow skipped by path
+    filtering does not report a `skipped` conclusion — it posts **nothing**, and
+    GitHub holds the required context at *"Expected — waiting for status to be
+    reported"* until the pull request is closed. Requiring these five would
+    therefore block every promotion pull request that does not happen to touch
+    their paths. `scope-consistency` is the sharpest case: it fires only on
+    `.github/scripts/doc-scope.js`, `.github/scripts/check-scope-consistency.js`
+    and `.github/CODEOWNERS`, so almost every promotion would stall on it.
+
+    This is the same distinction the entry above already draws for a context
+    that has never reported once, applied to one that stops reporting per pull
+    request — the first is a one-time stall that clears when the check runs, the
+    second recurs forever. **A required check and a `paths:` filter are mutually
+    exclusive; only one of them can be kept.** Two resolutions, and this
+    repository does not own the choice:
+
+    - **Drop the `paths:` filters and scope the five to
+      `branches: [staging, main]`.** They then always report on exactly the pull
+      requests where they are required, and never on a `develop` one — which is
+      the branch scope [AGENTS.md](AGENTS.md) already prescribes for a companion
+      workflow under "Companion plugins". Costs Actions minutes that are
+      unmetered on a public repository, and loses the advisory signal on
+      `develop` pull requests that gap 22 accepted.
+    - **Leave them advisory and close this gap as accepted.** They already run
+      and report; what they cannot be is blocking. Nothing is silently skipped
+      either way, which is what the original entry established.
+
+21. ~~**`setup-branch-protection.sh` silently deletes the required status
+    checks.**~~ **Closed 2026-08-04** (`licorsy/git-governance#41`). Each
+    `protect-<branch>` ruleset is now read before it is written and its
+    `required_status_checks` rule carried forward verbatim, and the run reports
+    which branches it preserved rather than doing it silently.
+
+    **Verified by an actual re-run**, not only by inspection — this register has
+    confused shipping a fix with running it before (see item 8). Re-running the
+    script against `.github` on 2026-08-04 left all three rulesets *byte for
+    byte identical* to a backup taken immediately before: all five contexts
+    still required on `protect-staging` and `protect-main`, none on
+    `protect-develop`, and `allowed_merge_methods` still `merge, squash` on
+    `develop` against `merge` on the other two. The header's long-standing
+    "idempotent — safe to re-run" claim is now true.
+
+    The entry left the fix open between two options — preserve the existing
+    rule, or own it outright so the two sources agree. Surveying all five
+    repositories settled it: the contexts are per-repository and cannot be
+    derived. The docs check reports as `docs-governance` in four repositories
+    and `ci-docs / docgov` in `ai-assisted-sdd-template`; `docs-governance` adds
+    one context per matrix cell (`test (20)`, `test (24)`); `platform-workflows`
+    adds `governance-compliance / governance-compliance`. A required context
+    that is never reported blocks the branch permanently, so a script that
+    guessed one would be worse than one that sets none — **preserve, never
+    invent** is the contract, and the script's header owns it.
+
+    Two consequences worth keeping. The script correspondingly cannot *remove* a
+    required check either: it faithfully preserves whatever it finds, including
+    a stale context, so dropping one means editing the ruleset directly. And the
+    fix had to reach `main`, not just `develop`, to reach anyone — the plugin
+    cache resolves tags, the same dependency recorded as items 8 and 12, so
+    until a release moved the tag every installed copy still handed back the
+    destructive version. **Released the same day as `v1.6.1`**, in the promotion
+    that carried the fix rather than after it: `main`, the floating `v1`, and
+    `v1.6.1^{}` all verified equal at `fb81285` against the remote's peeled
+    refs. The original finding follows.
+
     The script builds one ruleset payload whose `rules` array is exactly
     `deletion`, `non_fast_forward`, and `pull_request`, then `PUT`s it over the
     existing ruleset when one is found. Rulesets are replaced wholesale, not
@@ -620,6 +687,38 @@ batch, promote once per window, bump in the same breath.
       pull request are a real signal rather than a second copy of one, and with
       no required checks on `develop` they block nothing. What made the six
       workflows a defect was that they duplicated a run, not that they ran.
+
+23. **Three repositories carry permanent squash-era commits on `staging` and
+    `main`.** Measured 2026-08-03, counting non-merge commits present on a
+    promotion branch and absent from its source:
+
+    | Repository | unique to `staging` | unique to `main` |
+    | --- | --- | --- |
+    | `.github` | 0 | 0 |
+    | `docs-governance` | 0 | 0 |
+    | `git-governance` | 1 | 1 |
+    | `platform-workflows` | 2 | 2 |
+    | `ai-assisted-sdd-template` | 2 | 2 |
+
+    All of them date from the `hom -> staging` rename of 2026-07-31 and the
+    first reusable-workflow imports, when promotions were still squashed —
+    before the ruleset restricted `staging` and `main` to merge commits. The
+    doubled pull-request suffixes in their subjects (`... (#2) (#3)`) are the
+    signature of a squash of a squash.
+
+    **Accepted, and permanent.** A squashed promotion delivers content as a new
+    commit rather than as shared history, so the copy on `staging`/`main` has no
+    counterpart on `develop` and no later promotion can clear it. Nothing is
+    missing — the content reached every branch — and the merge-only ruleset
+    stops any new instance from appearing. Rewriting the three protected
+    branches to erase it would cost more than it is worth and is not proposed.
+
+    Recorded because it is not inert: it makes a promotion-time drift check
+    report a hit on three of five repositories forever. `git-governance`'s
+    `/promote-window` was written to **stop** on exactly this signal, which
+    would have refused to promote those three permanently; it now reports into
+    the confirmation checklist instead (`licorsy/git-governance#38`). Any future
+    check over this signal must make the same distinction.
 
 ## Canonical source
 
