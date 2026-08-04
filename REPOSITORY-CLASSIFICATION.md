@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.27.0"
+version: "1.28.0"
 created: 2026-08-01
 updated: 2026-08-04
 language: en
@@ -109,10 +109,10 @@ of 2026-08-02:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Item 20 is **open**, and
-only in its second half — the ruleset update, which item 21's closure made safe
-to apply but which cannot be done as originally written, and is now blocked
-behind one prerequisite change rather than a choice; items 2, 14, 17, 22,
+Each entry names the repository that owns the fix. Items 20 and 24 are
+**open** — 20 now only in the ruleset update, whose two prerequisites (item 21's
+closure, and the checks reporting unfiltered) are both met, leaving an action
+that needs explicit permission rather than a decision; items 2, 14, 17, 22,
 and 23 are **accepted** — real states, deliberately not scheduled for change;
 every other item is closed — kept here with its resolution, because a gap that
 vanishes without a record gets rediscovered as a new finding by the next audit.
@@ -608,12 +608,26 @@ batch, promote once per window, bump in the same breath.
     the promotion gate, where a failure blocks a release and the fix has to land
     back on `develop` and be re-promoted.
 
-    What is left is one action, not a decision: **drop the `paths:` filters and
-    change nothing else.** Tracked in `ai-assisted-sdd-template` as
-    `docs/prompts/012-always-report-governance-checks.md`; **not yet merged**,
-    so this entry stays open. The ruleset update remains a later window — a
-    context added before it reports hangs every pull request on the exact defect
-    being closed.
+    **The filters came off 2026-08-04** (`licorsy/ai-assisted-sdd-template#28`,
+    prompt 012), promoted the same day and released in `v1.2.0`. All six now
+    read `on: pull_request:` with no filter and no `push:` trigger, and the
+    re-scoping was declined rather than deferred.
+
+    The acceptance evidence is the promotion pull request itself
+    (`ai-assisted-sdd-template#31`): **eleven contexts reported, all green**,
+    including `adapter-rules`, `adapter-sync` and `scope-consistency` — the
+    three whose paths that diff never touched, so under the old filters they
+    would not have run at all. A check that reports on a promotion is exactly
+    what could not be relied on before.
+
+    **What remains open is only the ruleset update**, and its prerequisite is
+    now met: add `adapter-rules`, `adapter-sync`, `scope-consistency`,
+    `state-staleness`, `step-reference` and `test` to `protect-staging` and
+    `protect-main`. It is a **separate window** by the rule above, and it
+    changes protection on `staging`/`main`, so it needs explicit permission at
+    the moment of execution. Worth noting before it is applied: `test` is the
+    `governance-scripts-tests` job, unique in this repository but an unhelpfully
+    generic context to require by name.
 
 21. ~~**`setup-branch-protection.sh` silently deletes the required status
     checks.**~~ **Closed 2026-08-04** (`licorsy/git-governance#41`). Each
@@ -730,6 +744,39 @@ batch, promote once per window, bump in the same breath.
     would have refused to promote those three permanently; it now reports into
     the confirmation checklist instead (`licorsy/git-governance#38`). Any future
     check over this signal must make the same distinction.
+
+24. **`release-integrity` cannot tell a release from a commit that still
+    advertises unreleased work.** It compares the floating tag and the version
+    tag against `main` — shas only, with no notion of a changelog. So the three
+    failure modes item 8 lists are all it detects, and a fourth passes straight
+    through: cutting a tag on a commit whose `[Unreleased]` section is not
+    empty. The tag is then correct about *where* it points and wrong about
+    *what* it claims to contain.
+
+    Found the expensive way on 2026-08-04, as a near-miss rather than an
+    incident: `ai-assisted-sdd-template`'s `[Unreleased]` had quietly refilled
+    between the changelog being cut and the promotion being run, and the repo's
+    own newly-built `check-release-integrity` would have passed it — the check
+    written that same day, by the person about to tag. Caught by reading, not by
+    tooling.
+
+    **Latent everywhere, live in one place — and the distinction matters.** The
+    shared `platform-workflows` `release-integrity.yml` has the same blind spot,
+    but **none of the three tag-consumed repositories carries a `CHANGELOG.md`
+    at all** (verified 2026-08-04), so today there is nothing for it to be wrong
+    about there; `git-governance`'s `v1.6.1`, cut earlier the same day, is
+    unaffected for that reason and not because the check caught anything. The
+    exposure is real only in `ai-assisted-sdd-template`, which is the one
+    repository that has a changelog and the one that does **not** call the
+    shared workflow — it built a local `check-release-integrity` because the
+    shared one could not be adopted, its major-tag input having no
+    "empty to skip" affordance against a repo with no floating tag.
+
+    So the fix has two halves that must not be confused. The template tracks its
+    own as prompt 014. `platform-workflows` should assert `[Unreleased]` is
+    empty at tag time **before** any tag-consumed repository grows a changelog,
+    because that is the moment a latent blind spot becomes a wrong green — and
+    on current evidence it would be discovered by reading, as this one was.
 
 ## Canonical source
 
