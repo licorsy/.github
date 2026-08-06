@@ -216,9 +216,9 @@ batch, promote once per window, bump in the same breath.
    `main`, and *Use this template* copies the default branch — so there is no tag
    through which a consumer could receive a stale version, which is the only
    failure this check detects. `.github` carries no tags at all;
-   `ai-assisted-sdd-template`'s `v1.0.0`/`v1.1.0` are inert markers with no
-   floating `v1`, and `main` is 30 commits past `v1.1.0` with nobody affected.
-   Pointing the check at either would fail on *"floating tag 'v1' does not
+   `ai-assisted-sdd-template`'s `v1.0.0`/`v1.1.0`/`v1.2.0` are inert markers
+   with no floating `v1`, and `main` sits exactly at `v1.2.0`, 0 commits of
+   drift. Pointing the check at either would fail on *"floating tag 'v1' does not
    exist"* on its first run — a false positive, and the fastest way to train
    everyone to ignore a check that is correct everywhere else. The original
    finding follows.
