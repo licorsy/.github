@@ -3,9 +3,9 @@ title: "AGENTS.md"
 doc_type: instruction
 description: "Canonical agent instructions for this repository and the source of truth CLAUDE.md points at: the branch flow, Conventional Commits requirement, the merge-method and branch-lifecycle policy enforced server-side, the autonomous-to-develop and human-gated-to-staging/main permission model, the daily promotion-window cadence and what one confirmation authorizes, and the local and remote validation layers."
 status: active
-version: "1.3.0"
+version: "1.4.0"
 created: 2026-08-01
-updated: 2026-08-03
+updated: 2026-08-07
 language: en
 id: agents-instructions
 owner: Alexandre Clemente
