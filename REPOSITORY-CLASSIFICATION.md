@@ -3,9 +3,9 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.28.0"
+version: "1.29.0"
 created: 2026-08-01
-updated: 2026-08-04
+updated: 2026-08-07
 language: en
 id: repository-classification
 owner: Alexandre Clemente
@@ -109,13 +109,12 @@ of 2026-08-02:
 Open issues against this model and against the documents that describe it.
 Recording them here is deliberate: an undocumented gap gets rediscovered by
 every future audit, which is the failure mode this repository exists to stop.
-Each entry names the repository that owns the fix. Items 20 and 24 are
-**open** — 20 now only in the ruleset update, whose two prerequisites (item 21's
-closure, and the checks reporting unfiltered) are both met, leaving an action
-that needs explicit permission rather than a decision; items 2, 14, 17, 22,
-and 23 are **accepted** — real states, deliberately not scheduled for change;
-every other item is closed — kept here with its resolution, because a gap that
-vanishes without a record gets rediscovered as a new finding by the next audit.
+Each entry names the repository that owns the fix. Items 2, 14, 17, 22, and 23
+are **accepted** — real states, deliberately not scheduled for change; every
+other item is closed — kept here with its resolution, because a gap that
+vanishes without a record gets rediscovered as a new finding by the next
+audit. None is currently open — the next entry added here starts the count
+over, not a claim that no future gap will be found.
 
 **On sequencing.** Gaps 9, 18, and 19 were closed as a single change per
 repository rather than one promotion each. That was a correction. Gap 8 had just
@@ -547,8 +546,8 @@ batch, promote once per window, bump in the same breath.
     construction on every promotion, because GitHub writes the merge subjects
     itself.
 
-20. **Five of `ai-assisted-sdd-template`'s workflows report under one check
-    name.** `adapter-rules-check.yml`, `adapter-sync-check.yml`,
+20. ~~**Five of `ai-assisted-sdd-template`'s workflows report under one check
+    name.**~~ **Closed 2026-08-04.** `adapter-rules-check.yml`, `adapter-sync-check.yml`,
     `scope-consistency-check.yml`, `state-staleness-check.yml`, and
     `step-reference-check.yml` each name their only job `check`, and GitHub
     derives a check's context from the job's `name:` (falling back to the job
@@ -620,14 +619,25 @@ batch, promote once per window, bump in the same breath.
     would not have run at all. A check that reports on a promotion is exactly
     what could not be relied on before.
 
-    **What remains open is only the ruleset update**, and its prerequisite is
-    now met: add `adapter-rules`, `adapter-sync`, `scope-consistency`,
-    `state-staleness`, `step-reference` and `test` to `protect-staging` and
-    `protect-main`. It is a **separate window** by the rule above, and it
-    changes protection on `staging`/`main`, so it needs explicit permission at
-    the moment of execution. Worth noting before it is applied: `test` is the
-    `governance-scripts-tests` job, unique in this repository but an unhelpfully
-    generic context to require by name.
+    **The ruleset update landed 2026-08-04**, in the separate window the rule
+    above requires. `protect-staging` and `protect-main` on
+    `ai-assisted-sdd-template` both now require `adapter-rules`,
+    `adapter-sync`, `scope-consistency`, `state-staleness`, `step-reference`,
+    and `governance-scripts-tests` — the last using the job id rather than the
+    "`test`" this entry used loosely above, per the note that immediately
+    followed it. `protect-develop` still requires none of them, consistent with
+    [`AGENTS.md`](AGENTS.md)'s "Required status checks are on `staging`/`main`
+    only" policy.
+
+    **Found closed rather than closing it live.** `setup-branch-protection.sh`
+    only *preserves* `required_status_checks` (item 21) — it cannot invent
+    them — and the ruleset's own `updated_at` (2026-08-04T20:45–46 -03:00) is
+    consistent with the six contexts already being in place before that
+    script's item-21 verification re-run touched this repository, not with the
+    re-run having added them. The action this entry called for had already
+    been taken; only the record was stale. Verified 2026-08-07 by reading both
+    rulesets directly via `gh api`, not by trusting this file's prior "open"
+    status.
 
 21. ~~**`setup-branch-protection.sh` silently deletes the required status
     checks.**~~ **Closed 2026-08-04** (`licorsy/git-governance#41`). Each
@@ -745,8 +755,8 @@ batch, promote once per window, bump in the same breath.
     the confirmation checklist instead (`licorsy/git-governance#38`). Any future
     check over this signal must make the same distinction.
 
-24. **`release-integrity` cannot tell a release from a commit that still
-    advertises unreleased work.** It compares the floating tag and the version
+24. ~~**`release-integrity` cannot tell a release from a commit that still
+    advertises unreleased work.**~~ **Closed 2026-08-07**, both halves. It compares the floating tag and the version
     tag against `main` — shas only, with no notion of a changelog. So the three
     failure modes item 8 lists are all it detects, and a fourth passes straight
     through: cutting a tag on a commit whose `[Unreleased]` section is not
@@ -772,11 +782,31 @@ batch, promote once per window, bump in the same breath.
     shared one could not be adopted, its major-tag input having no
     "empty to skip" affordance against a repo with no floating tag.
 
-    So the fix has two halves that must not be confused. The template tracks its
-    own as prompt 014. `platform-workflows` should assert `[Unreleased]` is
-    empty at tag time **before** any tag-consumed repository grows a changelog,
-    because that is the moment a latent blind spot becomes a wrong green — and
-    on current evidence it would be discovered by reading, as this one was.
+    So the fix had two halves that had to not be confused.
+
+    **The template's half closed 2026-08-06** (`docs/prompts/018-assert-unreleased-empty-at-tag.md`
+    there, not `014` as this entry originally said — `014` is the unrelated
+    prompt behind item 20's ruleset update, confused here for the same reason
+    item 8 already warns about: shipping a fix and running it are different
+    events, and so, it turns out, are two prompts that both touch
+    `release-integrity`). `check-release-integrity.js` gained the public
+    `extractUnreleasedSection(text)` helper — the raw text between the `##
+    [Unreleased]` heading and the next `## [...]` heading — and now fails when
+    a declared release's tag matches `main`'s tip but that text is non-empty,
+    verified against a real `main` checkout where it passes clean.
+
+    **`platform-workflows`'s half closed 2026-08-07** (`licorsy/platform-workflows#28`).
+    `release-integrity.yml` gained a `changelog-file` input (default
+    `CHANGELOG.md`, empty or missing to skip) and mirrors the template's own
+    `extractUnreleasedSection` convention rather than inventing a second one,
+    firing only once the existing sha checks already found nothing wrong — the
+    state where a tag genuinely matches `main`. Still a no-op everywhere it
+    runs today, since none of `git-governance`, `docs-governance`, or
+    `platform-workflows` itself carries a `CHANGELOG.md` yet — wired ahead of
+    need, the same posture dependency-review took in gap 9, verified only by
+    synthetic fixtures and against the template's own real `[Unreleased]`
+    section (non-empty, correctly flagged) for lack of a live one to exercise
+    the passing branch against.
 
 ## Canonical source
 
