@@ -23,10 +23,20 @@ module.exports = {
       // below are not preferences — each one would break another system's
       // parsing or rendering:
       //
-      //   README.md  is rendered as the public organization profile at
-      //              github.com/licorsy, and GitHub renders frontmatter as a
-      //              visible table. It is excluded from `root_files` and
-      //              carries no frontmatter, so it declares no id either.
+      //   README.md  is this repository's own rendered README (not the org
+      //              profile — see profile/README.md below), and GitHub
+      //              renders frontmatter as a visible table there too. It is
+      //              excluded from `root_files` and carries no frontmatter,
+      //              so it declares no id either.
+      //
+      //   profile/README.md
+      //              is what actually renders as the public organization
+      //              profile at github.com/licorsy — a `.github` repo
+      //              convention distinct from the repo's own root README.md.
+      //              Same underlying reason (GitHub renders frontmatter as a
+      //              visible table there too), but no root_files entry is
+      //              needed to exclude it: scope_dirs below is ['docs'], so
+      //              `profile/` was never in scope to begin with.
       //
       //   .github/PULL_REQUEST_TEMPLATE.md and .github/ISSUE_TEMPLATE/*.md
       //              are owned by GitHub: the first is injected verbatim into
@@ -154,8 +164,12 @@ module.exports = {
       // NOT shadow. `facts` ships shadow-on by default, which means it reports
       // and never fails. A pin that cannot fail the build is decoration, and
       // decoration is what let all three of these drift in the first place.
-      // Turning it off also makes the rule run under `--changed`, so
-      // pre-commit catches the drift instead of CI at promotion time.
+      // Turning it off also makes the rule ELIGIBLE to run under `--changed`
+      // — but that only matters once the local `docgov-changed` pre-commit
+      // hook is actually installed, and in this repository it currently
+      // isn't (see the commented `repo: local` entry in
+      // `.pre-commit-config.yaml`). Until then, this rule's drift is caught
+      // remotely, on `staging`/`main` promotion PRs, not locally.
       shadow: false,
       scope_dirs: ['docs'],
       root_files: ['AGENTS.md', 'CLAUDE.md', 'REPOSITORY-CLASSIFICATION.md'],
@@ -179,8 +193,9 @@ module.exports = {
         },
         {
           id: 'frontmatter-exceptions-register',
-          value: 'README.md, .github/PULL_REQUEST_TEMPLATE.md, .github/ISSUE_TEMPLATE/*.md, '
-            + 'agents+commands plugin manifests, CHANGELOG.md, local-notes/**',
+          value: 'README.md, profile/README.md, .github/PULL_REQUEST_TEMPLATE.md, '
+            + '.github/ISSUE_TEMPLATE/*.md, agents+commands plugin manifests, '
+            + 'CHANGELOG.md, local-notes/**',
           why: 'this register is stated twice on purpose — once as the comment above, '
             + 'once as a table in the runbook — and the two had already diverged: the '
             + 'comment omitted local-notes/** entirely and both described the plugin-'
@@ -188,11 +203,32 @@ module.exports = {
           required_in: [
             {
               file: '.docgov.config.js',
-              pattern: /README\.md[\s\S]*?PULL_REQUEST_TEMPLATE\.md[\s\S]*?ISSUE_TEMPLATE[\s\S]*?commands\/[\s\S]*?CHANGELOG\.md[\s\S]*?local-notes/,
+              pattern: /README\.md[\s\S]*?profile\/README\.md[\s\S]*?PULL_REQUEST_TEMPLATE\.md[\s\S]*?ISSUE_TEMPLATE[\s\S]*?commands\/[\s\S]*?CHANGELOG\.md[\s\S]*?local-notes/,
             },
             {
               file: 'docs/org-governance-adoption.md',
-              pattern: /README\.md[\s\S]*?PULL_REQUEST_TEMPLATE\.md[\s\S]*?ISSUE_TEMPLATE[\s\S]*?commands\/\*\.md[\s\S]*?CHANGELOG\.md[\s\S]*?local-notes/,
+              pattern: /README\.md[\s\S]*?profile\/README\.md[\s\S]*?PULL_REQUEST_TEMPLATE\.md[\s\S]*?ISSUE_TEMPLATE[\s\S]*?commands\/\*\.md[\s\S]*?CHANGELOG\.md[\s\S]*?local-notes/,
+            },
+          ],
+        },
+        {
+          id: 'develop-merge-gate',
+          value: 'pre-commit and commit-message checks pass; the merge itself is '
+            + 'autonomous, zero required approvals by design',
+          why: 'this exact sentence was added to both docs/licorsy-organizational-'
+            + 'blueprint.md and ENGINEERING-STANDARDS.md in the same edit, replacing '
+            + 'a "review completed" gate that contradicted AGENTS.md\'s autonomous '
+            + 'zero-approval develop merge policy — a fact restated in 2 files with '
+            + 'nothing keeping the copies in sync is exactly the class this repo\'s '
+            + 'own "Documentation ownership" rule in AGENTS.md exists to close',
+          required_in: [
+            {
+              file: 'docs/licorsy-organizational-blueprint.md',
+              pattern: /pre-commit and commit-message checks pass; the merge itself is autonomous,\s*\n\s*zero required approvals by design/,
+            },
+            {
+              file: 'ENGINEERING-STANDARDS.md',
+              pattern: /pre-commit and commit-message checks pass; the merge itself is autonomous,\s*\n\s*zero required approvals by design/,
             },
           ],
         },

@@ -3,9 +3,9 @@ title: "Security and Reliability Baseline"
 doc_type: governance
 description: "The organization-level security and reliability controls Licorsy repositories adopt, split by whether they apply to every repository or only to those with a deployment surface, the additional controls required for regulated or sensitive systems, and how this baseline relates to the org-wide SECURITY.md policy."
 status: active
-version: "1.1.0"
+version: "1.2.0"
 created: 2026-08-01
-updated: 2026-08-01
+updated: 2026-08-07
 language: en
 id: security-baseline
 owner: Alexandre Clemente
@@ -69,7 +69,11 @@ a repository that has the surface the control applies to.
 
 ### Applied state
 
-As of 2026-08-01, across all five `licorsy` repositories — not just this one:
+Across all five `licorsy` repositories — not just this one. Branch protection
+through Dependabot were verified live against the GitHub API on 2026-08-01 and
+have not been re-checked since; dependency review was corrected and
+re-verified on 2026-08-07, by reading each repository's `pr-checks.yml`
+directly rather than the API:
 
 | Control | State |
 | --- | --- |
@@ -78,7 +82,7 @@ As of 2026-08-01, across all five `licorsy` repositories — not just this one:
 | Secret scanning push protection | **Enabled** |
 | Dependabot alerts and security updates | **Enabled** |
 | Secret scanning validity checks | **Not available** — GitHub Advanced Security only, and this organization is on the free plan |
-| Dependency review | **One repository of five.** Only `ai-assisted-sdd-template` calls `platform-workflows`' `ci-security.yml`, which implements it |
+| Dependency review | **Enabled, all five repositories.** Each calls `platform-workflows`' `ci-security.yml`, which implements it |
 
 Push protection is the control worth naming separately: secret scanning reports
 a leaked credential *after* it is pushed, push protection refuses the push. On
@@ -88,18 +92,16 @@ The validity-checks row is recorded because the failure is silent, not loud.
 `PATCH /repos/{owner}/{repo}` accepts
 `security_and_analysis.secret_scanning_validity_checks.status: "enabled"`,
 returns 200, and leaves the setting `disabled`. Reading the response back is the
-only way to find out — which is why every row above was verified against the
-API rather than assumed from a successful call.
+only way to find out — which is why the first five rows above were verified
+against the API rather than assumed from a successful call.
 
-**One repository-level control remains unmet: dependency review**, in four of
-the five repositories. A baseline whose own home repository quietly fails it is
-decoration, so it is stated rather than quietly dropped. Closing it means
-consuming `platform-workflows`' `ci-security.yml`, the way
-`ai-assisted-sdd-template` already does.
-
-Worth being honest about what that would buy: none of the four has a dependency
-manifest today, so dependency review would pass trivially. That makes it cheap
-to add, not urgent — and it is the reason the gap survived unnoticed.
+**All repository-level controls are met.** Dependency review was the last to
+close, on 2026-08-02 — the gap survived unnoticed because a baseline whose own
+home repository quietly failed a control read as decoration rather than as a
+signal to act on. Worth being honest about what closing it bought: none of the
+five repositories carries a dependency manifest today, so the check currently
+passes trivially. That made it cheap to add, not urgent, and is also why
+nothing here should be read as more thoroughly tested than a presence check.
 
 ## Additional controls for regulated or sensitive systems
 
