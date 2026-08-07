@@ -3,7 +3,7 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.29.0"
+version: "1.30.0"
 created: 2026-08-01
 updated: 2026-08-07
 language: en
@@ -189,12 +189,15 @@ batch, promote once per window, bump in the same breath.
    the config imports it.
 
 6. ~~**`CLAUDE.md` and the blueprint disagree on the branch prefix.**~~
-   **Closed 2026-08-01** by blueprint v1.1.0, which corrected Section 6.4 to
-   `feat/*` and pointed at `git-governance` for the full taxonomy rather than
-   restating it. Sections 11 and 13's source path were corrected to
-   `state/resources.md` in the same revision.
-   The blueprint body is consequently **no longer verbatim intake text**;
-   v1.0.0 in `git log` is the archived original.
+   **Closed 2026-08-01**, in the blueprint's first revision since intake
+   (`git log --follow docs/licorsy-organizational-blueprint.md`): Section 6.4
+   corrected to `feat/*` and repointed at `git-governance` for the full
+   taxonomy rather than restating it, and Sections 11 and 13's source path
+   corrected to `state/resources.md`, in the same revision. The blueprint
+   body is consequently **no longer verbatim intake text**; `v1.0.0` in
+   `git log` is the archived original. (That revision's own changelog entry
+   has since aged out of the blueprint's 3-entry retention cap — this is now
+   the citable record of what it did.)
 
 7. ~~**Repositories do not declare their plugins.**~~ **Closed 2026-08-01.**
    All five repositories now ship `.claude/settings.json` with
@@ -410,8 +413,9 @@ batch, promote once per window, bump in the same breath.
     something that can fail.
 
 16. ~~**`platform-workflows` carries one of the five compliance artifacts.**~~
-    **Closed 2026-08-01.** All five repositories are now 5/5, measured rather
-    than asserted. `platform-workflows` also runs its own
+    **Closed 2026-08-01.** All five repositories are now 6/6 (item 10, closed
+    the same day, is what moved the set from five artifacts to six), measured
+    rather than asserted. `platform-workflows` also runs its own
     `governance-compliance.yml` against itself at `strict: true`, referenced by
     path rather than by tag — a caller pins the released tag, but the repository
     hosting a workflow has to test the revision in the pull request, or a change
@@ -625,9 +629,14 @@ batch, promote once per window, bump in the same breath.
     `adapter-sync`, `scope-consistency`, `state-staleness`, `step-reference`,
     and `governance-scripts-tests` — the last using the job id rather than the
     "`test`" this entry used loosely above, per the note that immediately
-    followed it. `protect-develop` still requires none of them, consistent with
-    [`AGENTS.md`](AGENTS.md)'s "Required status checks are on `staging`/`main`
-    only" policy.
+    followed it. `protect-develop` still requires none of them — this gap's
+    remediation added these checks only to the `staging`/`main` rulesets,
+    matching how `required_status_checks` is already configured per branch,
+    not repo-wide, in every `setup-branch-protection.sh`-managed repository.
+    This is a narrower claim than "Actions doesn't run on `develop`" — in
+    `ai-assisted-sdd-template` specifically it does (see item 21's filter
+    history above); what's scoped to `staging`/`main` here is which checks a
+    ruleset *requires*, not where the workflow *runs*.
 
     **Found closed rather than closing it live.** `setup-branch-protection.sh`
     only *preserves* `required_status_checks` (item 21) — it cannot invent
