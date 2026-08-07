@@ -3,7 +3,7 @@ title: "AGENTS.md"
 doc_type: instruction
 description: "Canonical agent instructions for this repository and the source of truth CLAUDE.md points at: the branch flow, Conventional Commits requirement, the merge-method and branch-lifecycle policy enforced server-side, the autonomous-to-develop and human-gated-to-staging/main permission model, the daily promotion-window cadence and what one confirmation authorizes, and the local and remote validation layers."
 status: active
-version: "1.4.0"
+version: "1.5.0"
 created: 2026-08-01
 updated: 2026-08-07
 language: en
@@ -20,10 +20,16 @@ related: [claude-instructions, org-governance-adoption, engineering-standards, c
 coding agent that reads `AGENTS.md` by convention gets the same policy Claude
 Code does, with no second copy to keep in sync.
 
-The policy below originates from the `git-governance` plugin's scaffolded
-`CLAUDE.md`. This repository has moved it here and extended it; until the plugin
-scaffolds `AGENTS.md` itself, that divergence is deliberate and is tracked in
-[REPOSITORY-CLASSIFICATION.md](REPOSITORY-CLASSIFICATION.md) under "Known gaps".
+The policy below originated from the `git-governance` plugin's scaffolded
+`CLAUDE.md`, before the plugin scaffolded `AGENTS.md` itself — this repository
+moved the policy here and extended it ahead of the plugin catching up. That gap
+has since closed (`init-governance.sh` now scaffolds `AGENTS.md` first; see gap
+10 in [REPOSITORY-CLASSIFICATION.md](REPOSITORY-CLASSIFICATION.md), closed
+2026-08-01). What remains different here, deliberately, is the extension: the
+"Promotion cadence" section below has no equivalent in the plugin's own
+scaffold, since promotion-window batching is an org-level policy layered on
+top of the plugin's per-repo permission model, not something the plugin itself
+defines.
 
 ## Branch flow
 
@@ -50,7 +56,7 @@ feat/* (also fix/, refactor/, docs/, chore/, hotfix/)  ->  develop  ->  staging 
 ## Merge policy
 
 - **Never push directly to a protected branch.** `staging`, `main`, and
-  `develop` are all protected server-side by the same ruleset (see
+  `develop` are each protected server-side by their own ruleset (see
   `git-governance`'s `scripts/setup-branch-protection.sh`) — direct push is
   blocked on all three, not just `staging`/`main`. What distinguishes `develop`
   isn't a lighter server-side gate, it's the permission model below.
@@ -67,10 +73,11 @@ feat/* (also fix/, refactor/, docs/, chore/, hotfix/)  ->  develop  ->  staging 
   their checklist passes. **Merging one always requires explicit human
   confirmation**, given after the PR exists, never inferred — even when the
   request comes from the repo owner using their own credentials, and even in
-  the same breath as a request to open it. The one path where a single
-  confirmation covers both the open and the merge is `/promote-window`, asked
-  for **by name**: what it authorizes is one **promotion window**, not one
-  merge — see "Promotion cadence" below. See the permission model in
+  the same breath as a request to open it. Opening never needed the
+  confirmation to begin with; `/promote-window` is the path where a single
+  confirmation covers both merges of a `develop -> staging -> main` window,
+  asked for **by name**: what it authorizes is one **promotion window**, not
+  one merge — see "Promotion cadence" below. See the permission model in
   `git-governance`'s `agents/git-governance-advisor.md`.
 
 ### Why the `staging`/`main` gate is behavioral, not server-side
@@ -130,7 +137,11 @@ it offers nothing this model needs and rewrites committer metadata on the way in
 Promotions are batched into **one promotion window per repository per working
 day**, run when the day's work is done — not one promotion per change. A day
 with nothing worth promoting promotes nothing: the target is a ceiling on
-ceremony, not a quota to fill.
+ceremony, not a quota to fill. "Working day" means any day work actually
+happens on a repository, weekends included for a solo maintainer — it is not
+a synonym for "weekday", and several gaps in
+[REPOSITORY-CLASSIFICATION.md](REPOSITORY-CLASSIFICATION.md) were closed on a
+Saturday or Sunday without that being a cadence violation.
 
 **What batches is the promotion, not the work.** Commit atomicity is unchanged
 (see "Commit policy"), and work branches keep merging into `develop` one pull
@@ -141,21 +152,27 @@ machine time; it is the human decision each one spends.
 
 ### What one confirmation authorizes
 
-One confirmation opens a window for **one repository** and covers **both hops**:
-`develop -> staging` and `staging -> main`. Inside an open window, the agent may
-open and merge both promotion pull requests, each only once its required checks
-are green, stopping at the first red. Outside a window it may do neither.
+One confirmation opens a window for **one repository** and covers **both
+merges**: `develop -> staging` and `staging -> main`. Opening each promotion
+PR is always autonomous regardless of a window, per "Merge policy" above; what
+a window changes is the *merge*. Inside an open window, the agent may merge
+both promotion pull requests as soon as they're opened, each only once its
+required checks are green, stopping at the first red — the window is what
+lets it skip the otherwise-mandatory per-hop human confirmation before each
+merge. Outside a window, PRs still open on their own, but each merge still
+needs its own separate confirmation.
 
 This changes who clicks merge, and that is stated rather than elided: before,
-each merge into a promotion branch was itself a human action; now the human
-action is opening the window. What justifies the change is that the second hop
-introduces nothing the first was not approved for — `staging -> main` promotes
-exactly the range the confirmation named — so a second prompt asks the same
-question about the same commits. The gate is otherwise untouched: no promotion
-pull request is opened without a confirmation, the approval count stays at zero
-for the reason given under "Merge policy", and why this gate is behavioral
-rather than server-side is unchanged (see "Why the `staging`/`main` gate is
-behavioral, not server-side").
+each merge into a promotion branch was itself a human action; now, inside a
+window, the human action is opening the window. What justifies the change is
+that the second hop introduces nothing the first was not approved for —
+`staging -> main` promotes exactly the range the confirmation named — so a
+second prompt asks the same question about the same commits. The gate is
+otherwise untouched: no promotion pull request is *merged* without a
+confirmation — either per-hop, or once via an open window — the approval count
+stays at zero for the reason given under "Merge policy", and why this gate is
+behavioral rather than server-side is unchanged (see "Why the `staging`/`main`
+gate is behavioral, not server-side").
 
 ### Off-cadence: `hotfix`, and the exception cadence cannot batch
 
@@ -258,29 +275,32 @@ which is earlier, cheaper, and actually preventive.
 
 `git-governance` owns branch taxonomy, commit format, and merge permissions
 for a repo. It does **not** need to own every workflow trigger — a companion
-plugin may bring its own workflow instead of using a shared step in
+plugin may bring its own workflow instead of using the shared job in
 `pr-checks.yml`, as long as it's narrowly scoped to what it actually checks
 (for example, path-filtered to `**/*.md` and its own config file). For
 [docs-governance](https://github.com/licorsy/docs-governance) specifically,
 that file must be named exactly `.github/workflows/docs-governance.yml` — not
 just any narrowly-scoped filename — because that literal string is what
 `pr-checks.yml`'s guard checks for below; a differently-named docs-governance
-workflow would go unrecognized and the shared step would keep running
+workflow would go unrecognized and the shared job would keep running
 alongside it. A different companion plugin would need its own guard, since
 this specific filename check only knows about docs-governance. What to avoid
 is a companion plugin
 duplicating a check `pr-checks.yml` already runs broadly: the shared
-`docs-governance` step in `pr-checks.yml` is guarded by all three of
+`docs-governance` job in `pr-checks.yml` is guarded by all three of
 `github.event_name == 'pull_request'`, `hashFiles('.docgov.config.js') != ''`,
 and `hashFiles('.github/workflows/docs-governance.yml') == ''`, so it
 self-disables the moment a repo adds that file — no manual toggling needed.
+The job itself always runs; the three clauses gate its one meaningful step,
+because `hashFiles()` is not recognized in a job-level `if:` (see
+`.github/workflows/pr-checks.yml`'s own comment on this).
 Keep all three clauses when copying this workflow: dropping the first means a
 manual `workflow_dispatch` run passes an empty `base-sha` — only the
 `version-bump` rule reads that value, and it abstains rather than fails
 without one, so the other rules (frontmatter, internal-links,
 changelog-retention) still run and can still fail; a dispatch run is a
 *partial* check missing version-bump coverage, not a run doing nothing;
-dropping the second runs the step in repos with no docs-governance config at
+dropping the second runs the job in repos with no docs-governance config at
 all; dropping the third is what would let the same check run twice on any PR
 into `staging`/`main` that touches docs.
 
@@ -340,9 +360,10 @@ re-breaking it.
 1. `claude plugin marketplace add licorsy/git-governance` then
    `claude plugin install git-governance@git-governance` in the target repo.
 2. Run `/git-check` — it reports what's missing and, with confirmation,
-   scaffolds `CLAUDE.md` plus `.pre-commit-config.yaml` and
-   `.github/workflows/pr-checks.yml` via `scripts/init-governance.sh`. It
-   never overwrites an existing file in the target repo.
+   scaffolds `AGENTS.md`, `CLAUDE.md`, `.pre-commit-config.yaml`,
+   `.github/workflows/pr-checks.yml`, and `.claude/settings.json` via
+   `scripts/init-governance.sh`. It never overwrites an existing file in the
+   target repo.
 3. If the target repo doesn't have `develop`/`staging` yet, create them before
    running the protection script below.
 4. `pre-commit install && pre-commit install --hook-type commit-msg`.

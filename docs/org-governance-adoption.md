@@ -3,9 +3,9 @@ title: "Org-Wide Governance Adoption"
 doc_type: manual
 description: "Runbook for the git-governance and docs-governance plugins across licorsy repositories: which repository owns which part of the automation, what a compliant repository looks like in-repo and on GitHub, how to bring an existing repository up to standard, and how a new repository inherits it."
 status: active
-version: "1.4.0"
+version: "1.5.0"
 created: 2026-08-01
-updated: 2026-08-01
+updated: 2026-08-07
 language: en
 id: org-governance-adoption
 owner: Alexandre Clemente
@@ -45,11 +45,13 @@ ownership matrix.
 **`git-governance`** owns the branch-naming taxonomy, commit-message format,
 and merge-permission matrix, plus the slash commands and the
 `git-governance-advisor` subagent. Its `scripts/init-governance.sh` scaffolds
-`CLAUDE.md`, `.pre-commit-config.yaml`, `.github/workflows/pr-checks.yml`, and
-`.claude/settings.json` into a target repository — five of the six artifacts
-below. **It never overwrites an existing file** — it skips with a warning. In a
-repository created from `ai-assisted-sdd-template`, the template's own
-`CLAUDE.md` therefore wins; the `git-governance` copy is only the fallback for
+`AGENTS.md`, `CLAUDE.md`, `.pre-commit-config.yaml`,
+`.github/workflows/pr-checks.yml`, and `.claude/settings.json` into a target
+repository — five of the six artifacts below (only `.docgov.config.js`, owned
+by `docs-governance`, isn't one of them). **It never overwrites an existing
+file** — it skips with a warning. In a repository created from
+`ai-assisted-sdd-template`, the template's own `AGENTS.md`/`CLAUDE.md` pair
+therefore wins; the `git-governance` copies are only the fallback for
 repositories that have none. The same rule protects a target that already
 declares its own `enabledPlugins`.
 
@@ -81,7 +83,7 @@ A compliant repository carries six artifacts:
 | `.claude/settings.json` | `init-governance.sh` | Declares `enabledPlugins` so plugin availability belongs to the repo |
 
 Compliance is now measurable rather than asserted:
-`platform-workflows`' `governance-compliance.yml` checks all five as a reusable
+`platform-workflows`' `governance-compliance.yml` checks all six as a reusable
 workflow, advisory by default and failing with `strict: true`. It is a presence
 check on purpose — what each file must *say* is enforced by `pre-commit` and
 `docgov` against the repository's own config, and re-checking that in a workflow
@@ -154,7 +156,8 @@ not part of the tracked corpus at all:
 
 | Excluded | Reason |
 | --- | --- |
-| `README.md` | Rendered as the public repository or organization profile; GitHub renders frontmatter as a visible table |
+| `README.md` | Rendered as the repository's own README; GitHub renders frontmatter as a visible table |
+| `profile/README.md` (`.github` repo only) | Renders as the public `github.com/licorsy` organization profile — a `.github`-repo convention distinct from the repo's own root `README.md`; same reason for exclusion |
 | `.github/PULL_REQUEST_TEMPLATE.md` | Injected verbatim into every pull request body |
 | `.github/ISSUE_TEMPLATE/*.md` | Carries GitHub-mandated template frontmatter |
 | `agents/*.md`, `commands/*.md`, `.claude/agents/*.md`, `.claude/commands/*.md` | Claude Code plugin manifests; frontmatter is the routing contract. Exempt from *this* schema, not from checking — see below |
@@ -194,7 +197,7 @@ consequences are easy to get wrong:
 ## Bringing an existing repository up to standard
 
 1. Run `/git-check`. It audits and, with confirmation, runs
-   `init-governance.sh` for the four files it owns, including
+   `init-governance.sh` for the five files it owns, including `AGENTS.md` and
    `.claude/settings.json`.
 2. Run `pre-commit install && pre-commit install --hook-type commit-msg`. Both
    are required — they wire different hook stages.
@@ -212,7 +215,7 @@ consequences are easy to get wrong:
    it skips a file that already exists — so a repository that had a partial one
    keeps it unchanged.
 6. Verify: `/git-check` reports Compliant, `docgov check` passes, and
-   `governance-compliance.yml` reports 5/5.
+   `governance-compliance.yml` reports 6/6.
 
 Configuration declares **data, never logic**. If a check does not exist, it
 belongs in the engine, not in a repository's config — otherwise the engine gets

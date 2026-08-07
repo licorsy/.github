@@ -4,9 +4,9 @@ subtitle: "Operating Model, Engineering Standards, and Platform Architecture"
 doc_type: governance
 description: "Canonical operating model for Licorsy — organizational principles, repository architecture and ownership boundaries, architecture and engineering standards, security and reliability baseline, tooling strategy, maturity model, and governance cadence."
 status: active
-version: "1.3.0"
+version: "1.4.0"
 created: 2026-08-01
-updated: 2026-08-03
+updated: 2026-08-07
 language: en
 id: organizational-blueprint
 owner: Alexandre Clemente
@@ -19,6 +19,12 @@ related: [architecture-principles, engineering-standards, repository-classificat
 
 Changelog:
 
+- v1.4.0: Section 8.2's "Before merge to `develop`" gate no longer lists
+  "review completed" — it contradicted `AGENTS.md`'s autonomous,
+  zero-required-approval merge policy for `develop`. Also dropped "docs
+  governance passes" from that same gate: not actually enforced pre-merge on
+  `develop` in most repositories today. Replaced both with what actually
+  gates that merge.
 - v1.3.0: Section 14 distinguishes the *review* cadence it defines from the
   *delivery* cadence introduced in `AGENTS.md`, so the two uses of the word do
   not read as one policy stated twice.
@@ -27,13 +33,6 @@ Changelog:
   them published the organization's private project list for no governance
   benefit, since every rule applies to the category. One of the names was also
   stale — it referred to a repository that does not exist.
-- v1.1.0: First revision since intake. Section 6.4's branch progression corrected
-  `feature/*` → `feat/*` and pointed at `git-governance` for the full prefix
-  taxonomy, resolving a contradiction where this file was declared canonical while
-  `CLAUDE.md` carried the current names. Section 11's and 13's source path
-  corrected to `state/resources.md`, the file that actually exists.
-  **The body is no longer verbatim intake text** — v1.0.0 in `git log` is the
-  archived original.
 
 ---
 
@@ -401,8 +400,12 @@ Before coding:
 Before merge to `develop`:
 - tests pass
 - lint passes
-- docs governance passes
-- review completed
+- pre-commit and commit-message checks pass; the merge itself is autonomous,
+  zero required approvals by design — see `AGENTS.md`, "Merge policy", for why.
+  Documentation governance is not a `develop`-merge gate in most repositories:
+  it runs remotely only on `staging`/`main` promotion PRs (see AGENTS.md,
+  "Remote validation layer"), and locally only where the optional
+  `docgov-changed` pre-commit hook is actually installed.
 
 Before merge to `staging`:
 - integration checks pass
