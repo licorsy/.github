@@ -3,9 +3,9 @@ title: "Engineering Standards"
 doc_type: governance
 description: "Organization-wide engineering standards: the Lean + Spec-Driven Development delivery flow, the branch promotion model, the required quality gates at each promotion step, the standard document set every repository carries, the tooling strategy, and an addendum of tooling candidates that are explicitly not yet policy."
 status: active
-version: "1.1.0"
+version: "1.2.0"
 created: 2026-08-01
-updated: 2026-08-03
+updated: 2026-08-07
 language: en
 id: engineering-standards
 owner: Alexandre Clemente
@@ -69,8 +69,11 @@ under "Promotion cadence", also not restated here.
 
 - tests pass
 - lint passes
-- docs governance passes
-- review completed
+- pre-commit and commit-message checks pass; the merge itself is autonomous,
+  zero required approvals by design — see `AGENTS.md`, "Merge policy", for why.
+  Documentation governance is not a `develop`-merge gate in most repositories:
+  it runs remotely only on `staging`/`main` promotion PRs, and locally only
+  where the optional `docgov-changed` pre-commit hook is actually installed.
 
 **Before merge to `staging`**
 

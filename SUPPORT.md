@@ -3,9 +3,9 @@ title: "Support"
 doc_type: governance
 description: "Where to ask questions, report bugs, and request features across licorsy repositories, and why security concerns go through a different channel. Best-effort response times; no formal SLA."
 status: active
-version: "1.0.0"
+version: "1.1.0"
 created: 2026-07-31
-updated: 2026-08-01
+updated: 2026-08-07
 language: en
 id: support
 owner: Alexandre Clemente
@@ -33,6 +33,8 @@ Use the repository's issue templates:
   or not working as documented.
 - **Feature request** — a change or addition to this project's process, docs, or
   tooling.
+- **Unexpected agent behavior** — an AI agent (orchestrator, reviewer, or other
+  subagent) did something unexpected.
 
 See [CONTRIBUTING.md](https://github.com/licorsy/.github/blob/main/CONTRIBUTING.md) for how proposed changes move from issue to
 implementation (the Change-as-prompt principle).
