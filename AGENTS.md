@@ -62,11 +62,16 @@ feat/* (also fix/, refactor/, docs/, chore/, hotfix/)  ->  develop  ->  staging 
   it once `pre-commit` and commit-message checks pass. No pause is needed —
   what makes `develop` safe to automate is that errors there are cheap to
   revert, not a lighter review requirement.
-- Merging into `staging` or `main` always requires **explicit human confirmation
-  before the PR is even opened** — even when the request comes from the repo
-  owner using their own credentials. What that confirmation authorizes is one
-  **promotion window**, not one merge: see "Promotion cadence" below. See the
-  permission model in `git-governance`'s `agents/git-governance-advisor.md`.
+- Opening a promotion PR into `staging` or `main` needs no confirmation —
+  `/prepare-merge-staging` and `/prepare-release-main` open it directly once
+  their checklist passes. **Merging one always requires explicit human
+  confirmation**, given after the PR exists, never inferred — even when the
+  request comes from the repo owner using their own credentials, and even in
+  the same breath as a request to open it. The one path where a single
+  confirmation covers both the open and the merge is `/promote-window`, asked
+  for **by name**: what it authorizes is one **promotion window**, not one
+  merge — see "Promotion cadence" below. See the permission model in
+  `git-governance`'s `agents/git-governance-advisor.md`.
 
 ### Why the `staging`/`main` gate is behavioral, not server-side
 
