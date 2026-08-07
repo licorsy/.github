@@ -3,9 +3,9 @@ title: "Repository Classification"
 doc_type: governance
 description: "The four Licorsy repository categories, what each repository owns and must not own, the single-owner matrix that prevents duplicated policy, the verified portability status of each platform repository, and the open gaps tracked against that model."
 status: active
-version: "1.28.0"
+version: "1.29.0"
 created: 2026-08-01
-updated: 2026-08-04
+updated: 2026-08-07
 language: en
 id: repository-classification
 owner: Alexandre Clemente
